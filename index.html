@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>리니지W-V7-r2(2022.xx.xx)</title>
+</head>
+<style>
+    :root {
+        --tp-base-background-color: hsla(0, 80%, 40%, 1.00);
+        --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
+        --tp-button-background-color: hsla(0, 0%, 100%, 1.00);
+        --tp-button-background-color-active: hsla(0, 0%, 85%, 1.00);
+        --tp-button-background-color-focus: hsla(0, 0%, 90%, 1.00);
+        --tp-button-background-color-hover: hsla(0, 0%, 95%, 1.00);
+        --tp-button-foreground-color: hsla(230, 20%, 11%, 1.00);
+        --tp-container-background-color: hsla(0, 0%, 0%, 0.20);
+        --tp-container-background-color-active: hsla(0, 0%, 0%, 0.35);
+        --tp-container-background-color-focus: hsla(0, 0%, 0%, 0.30);
+        --tp-container-background-color-hover: hsla(0, 0%, 0%, 0.25);
+        --tp-container-foreground-color: hsla(0, 0%, 100%, 0.90);
+        --tp-groove-foreground-color: hsla(0, 0%, 0%, 0.50);
+        --tp-input-background-color: hsla(0, 0%, 0%, 0.50);
+        --tp-input-background-color-active: hsla(0, 0%, 0%, 0.65);
+        --tp-input-background-color-focus: hsla(0, 0%, 0%, 0.60);
+        --tp-input-background-color-hover: hsla(0, 0%, 0%, 0.55);
+        --tp-input-foreground-color: hsla(0, 0%, 100%, 0.90);
+        --tp-label-foreground-color: hsla(0, 0%, 100%, 0.90);
+        --tp-monitor-background-color: hsla(0, 0%, 0%, 0.50);
+        --tp-monitor-foreground-color: hsla(0, 0%, 100%, 0.50);
+    }
+</style>
+
+<body>
+    <div id="container" class="mandloh" style="width:300px; float:left"></div>
+    <video id="video" style="display:none" autoplay></video>
+    <canvas id="canvas" style="display:none; float:left"></canvas>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/@tweakpane/plugin-essentials@0.1.4/dist/tweakpane-plugin-essentials.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tweakpane-image-plugin@1.1.3/dist/tweakpane-image-plugin.min.js"></script>
+<script>
+    const videoP1 = document.getElementById("video");
+    const canvasP1 = document.getElementById("canvas");
+    canvasP1.width = 1280;
+    canvasP1.height = 720;
+    const ctxP1 = canvasP1.getContext("2d");
+    const canvasHp = document.createElement("canvas");
+    const ctxHp = canvasHp.getContext("2d");
+    const canvasMp = document.createElement("canvas");
+    const ctxMp = canvasMp.getContext("2d");
+    const canvasPotion = document.createElement("canvas");
+    const ctxPotion = canvasPotion.getContext("2d");
+    const canvasPk = document.createElement("canvas");
+    const ctxPk = canvasPk.getContext("2d");
+
+    const paramP1 = {
+        captureHwnd: 0,
+        imgHp: new Image(),
+        imgMp: new Image(),
+        hpPos: { x: 90, y: 32, w: 190, h: 6 },
+        mpPos: { x: 90, y: 46, w: 190, h: 6 },
+        hpp: 0,
+        mpp: 0,
+        inCombat: "보통",
+        noPotion: "있음",
+        controlHwnd: 0,
+        controlText: "EMPTY",
+        hwndOpt: {},
+        arduino: false,
+        port: "",
+        portOpt: {},
+        potionHomeUse: false,
+        potionThres: 0.5,
+        checkPos: false,
+        info: "리니지W 모니터 by 만들오",
+        pause: 0,
+        homeUse: false,
+        homeRange: { min: 0, max: 40 },
+        homeKey: "8",
+        homeKeyCount: 2,
+        homeKeyDelay: 1,
+        homeCool: 120,
+        homeInCool: false,
+        tellUse: false,
+        tellRange: { min: 40, max: 60 },
+        tellKey: "7",
+        tellCool: 5,
+        tellInCool: false,
+        pkUse: false,
+        pkThres: 0.5,
+        pkKey: "e",
+        pkPreCool: 0,
+        pkCool: 2,
+        pkInCool: false,
+        timer1Use: false,
+        timer1HPRange: { min: 0, max: 100 },
+        timer1MPRange: { min: 0, max: 100 },
+        timer1Key: "3",
+        timer1Cool: 5,
+        timer1InCool: false,
+        timer1Double: false,
+        timer1Count: 0,
+        timer2Use: false,
+        timer2HPRange: { min: 0, max: 100 },
+        timer2MPRange: { min: 0, max: 100 },
+        timer2Key: "4",
+        timer2Cool: 5,
+        timer2InCool: false,
+        timer2Double: false,
+        timer2Count: 0,
+        timer3Use: false,
+        timer3HPRange: { min: 0, max: 100 },
+        timer3MPRange: { min: 0, max: 100 },
+        timer3Key: "4",
+        timer3Cool: 5,
+        timer3InCool: false,
+        timer3Double: false,
+        timer3Count: 0,
+        homeCount: 0,
+        potionCount: 0,
+        tellCount: 0,
+        pkCount: 0,
+        telegram: false,
+        donaURL: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGUAAABeCAYAAAA6wdqhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAACVtSURBVHhe7Z0HlF1V9f/pkEKQDgYSugQBQUBJBDGiIBi6SpeSgGjoJYChpVDSJo1MemaSySSZ9JBJgfSQhIQQuqiIgAIKioqgiFL2737OvO+bnfPOezMTXP75r8V3rb3m3dPuuWefstu9s5l9js8cPmfKZxB5pvzxj3+0t956y/70pz81mf7whz/YBx98kGupri3l8fv9998P6f/+9783yksRbX300Ueh/Lvvvhuu//KXv4Rr8Pbbb4e0f/zjH7mUevz1r3/dKO/jjz8O19B//vOfkCb4PN/3YuAZKMsYxaA+eannaYhoj7oeeaZsttlmn4oqKytDO//6178K8u65556QV11dXZCXog0bNoTy559/frg++OCDwzXYddddQ9ott9ySS6nHEUccEfKuv/76cP2LX/wi3+bChQtDmvDMM8/k8yZMmJBLLY4HHnggXz7GxIkT83mbSh4FTGnRooV94QtfsFatWjVIO+20U77e5MmTQzvMSKXtsMMO4e+QIUNC3pw5c8K16u+444629dZb58uLnn322VD+hhtuCNcnnXRSuAZf+9rXQtpdd90V7vW3v/0t0CeffGKnnHJKyOvevXso+9hjj+XbXLp0aUgTfvWrX+XzYMo///nPQIBVxIpU26zwsrKyUHa//fYLZTymTZuWb4sx8WNUjBhjxlr1PAqY8vjjj+dSGoc999wz1JsyZUq49kxhoBrCTTfdlC8vElNKAabE9datWxfyevXqVZAXM8Xj9NNPD2XOOeeccE07cf2rrroq5KUgpjAWTQE7gtr3KGBKvMwbgraTFFN0NpQCD6vyoldeeSWXWxwppsyfPz/k9ezZsyCvFFN+/OMfhzKdO3cO1ymmXH311SEvBTGFsWgKHnnkkXz7HkWZwuG6xx572AEHHGAHHnhgnli++++/fygDSjGFcrQxZsyYkPfwww+H8ixxrQYx5Xvf+1449N54442wXe2zzz7hfm3atLFzzz03lPUQU4466qhQ7/nnn88LFI1hym9+8xvbeeedrV27dvltRExhu6K9N998M78liilsa2zLX/ziF/P3SzHloIMOCmPlx46x3H33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"
+    }
+
+    const ws = new WebSocket("ws://localhost:10025");
+    ws.onopen = (evt) => {
+        console.log("애드온 연결성공.");
+        sendTo("getWinList", ""); // 윈도우 리스트 요청
+    }
+    ws.onclose = (evt) => {
+        console.log("애드온 연결종료.");
+    }
+    ws.onmessage = (evt) => {
+        const msg = JSON.parse(event.data);
+        const type = msg.type;
+        const text = msg.text;
+        if (type == "getWinList") {
+            for (win of text) {
+                if (win[0].includes("리니지W")) paramP1.hwndOpt[win[0]] = win[1];
+            }
+            P1.addInput(paramP1, "controlHwnd", { options: paramP1.hwndOpt, label: "제어창", index: 1 });
+        } else if (type == "connectTelegram") {
+            console.log(text);
+        } else if (type == "processHp") {
+            paramP1.hpp = text;
+            P1.children[3].label = `체력: ${paramP1.hpp}%`;
+        } else if (type == "processMp") {
+            paramP1.mpp = text;
+            P1.children[4].label = `마나: ${paramP1.mpp}%`;
+        } else if (type == "findPotion") {
+            paramP1.noPotion = (text > 0) ? "없음" : "있음";
+        } else if (type == "findPk") {
+            paramP1.inCombat = (text > 0) ? "전투" : "보통";
+        }
+        else if (type == "getSerialPorts") {
+            console.log(text);
+        } else if (type == "connectSerial") {
+            console.log(text);
+        } else if (type == "sendToTelegram") {
+            console.log(text);
+        } else if (type == "sendToTelegramPhoto") {
+            console.log(text);
+        } else {
+            console.log(msg);
+        }
+    }
+
+    const saveFile = (content, fileName, contentType) => {
+        var a = document.createElement("a");
+        var file = new Blob([content], { type: contentType });
+        a.href = URL.createObjectURL(file);
+        a.download = fileName;
+        a.click();
+    }
+
+    const saveData = () => {
+        saveFile(JSON.stringify(paramP1), "user.json", "text/plain");
+        pprint("저장 완료.");
+    }
+
+    const checkData = (newOne) => {
+        const keys = Object.keys(paramP1);
+        for (key of keys) {
+            if (paramP1[key] !== newOne[key]) {
+                paramP1[key] = newOne[key];
+            }
+        }
+    };
+
+    const loadData = () => {
+        const loader = document.createElement("input");
+        loader.type = "file";
+        loader.onchange = (evt) => {
+            const input = evt.target;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const data = reader.result;
+                checkData(JSON.parse(data));
+                pprint("불러오기 완료.");
+                P1.refresh();
+            }
+            reader.readAsText(input.files[0]);
+        }
+        loader.click();
+    }
+
+    const sendTo = (type, text) => {
+        const msg = { type: type, text: text };
+        if (ws.readyState == 1) ws.send(JSON.stringify(msg));
+        else console.log("애드온이 연결되지 않았습니다.");
+    }
+
+    const pprint = (msg) => {
+        paramP1.info += "\n" + msg;
+    }
+
+    const startCapture = async () => {
+        const displayMediaOptions = { video: { cursor: "always" }, audio: false };
+        try {
+            videoP1.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+            const label = video.srcObject.getTracks()[0].label;
+            const ist = label.indexOf(":");
+            const iend = label.indexOf(":", ist + 1);
+            const hwnd = label.substring(ist + 1, iend);
+            paramP1.captureHwnd = hwnd;
+            paramP1.controlHwnd = hwnd;
+            loop();
+        } catch (err) {
+            console.error("Error: " + err);
+        }
+    }
+
+    const loop = () => {
+        ctxP1.drawImage(videoP1, 0, 0, videoP1.videoWidth, videoP1.videoHeight, 0, 0, canvasP1.width, canvasP1.height);
+        canvasHp.width = paramP1.hpPos.w;
+        canvasHp.height = paramP1.hpPos.h;
+        ctxHp.drawImage(canvasP1, paramP1.hpPos.x, paramP1.hpPos.y, paramP1.hpPos.w, paramP1.hpPos.h, 0, 0, paramP1.hpPos.w, paramP1.hpPos.h);
+        const hpData = canvasHp.toDataURL("image/jpeg", 1);
+        paramP1.imgHp.src = hpData;
+        sendTo("processHp", hpData);
+
+        canvasMp.width = paramP1.mpPos.w;
+        canvasMp.height = paramP1.mpPos.h;
+        ctxMp.drawImage(canvasP1, paramP1.mpPos.x, paramP1.mpPos.y, paramP1.mpPos.w, paramP1.mpPos.h, 0, 0, paramP1.mpPos.w, paramP1.mpPos.h);
+        const mpData = canvasMp.toDataURL("image/jpeg", 1);
+        paramP1.imgMp.src = mpData;
+        sendTo("processMp", mpData);
+
+        canvasPotion.width = 26;
+        canvasPotion.height = 39;
+        ctxPotion.drawImage(canvasP1, 459, 636, canvasPotion.width, canvasPotion.height, 0, 0, canvasPotion.width, canvasPotion.height);
+        sendTo("findPotion", [canvasPotion.toDataURL("image/jpeg", 1), paramP1.potionThres]);
+
+        canvasPk.width = 23;
+        canvasPk.height = 23;
+        ctxPk.drawImage(canvasP1, 1059, 527, canvasPk.width, canvasPk.height, 0, 0, canvasPk.width, canvasPk.height);
+        sendTo("findPk", [canvasPk.toDataURL("image/jpeg", 1), paramP1.pkThres]);
+
+        if (paramP1.checkPos) {
+            ctxP1.fillStyle = "rgba(0,255,0,1)";
+            ctxP1.fillRect(paramP1.hpPos.x, paramP1.hpPos.y, paramP1.hpPos.w, paramP1.hpPos.h);
+            ctxP1.fillRect(paramP1.mpPos.x, paramP1.mpPos.y, paramP1.mpPos.w, paramP1.mpPos.h);
+        }
+        if (paramP1.pause == 0) calculate(paramP1);
+        P1.refresh();
+        setTimeout(loop, 250);
+    }
+
+    const calculate = (param) => {
+        // 귀환
+        if (param.homeUse) {
+            if (param.hpp >= param.homeRange.min && param.hpp <= param.homeRange.max) {
+                param.homeCount += 1;
+                if (param.homeCount > 1) {
+                    param.homeCount = 0;
+                    for (let i = 1; i <= param.homeKeyCount; i++) {
+                        setTimeout(() => sendTo("sendKey", [param.controlHwnd, param.homeKey]), i * param.homeKeyDelay * 1000);
+                        if (i == param.homeKeyCount) {
+                            setTimeout(() => {
+                                //sendTo("sendTelegram", "캐릭터 귀환 - 체력낮음.");
+                                sendTo("sendTelegramPhoto", ["캐릭터 귀환 - 체력낮음.", canvasP1.toDataURL("image/jpeg", 0.4)]);
+                                sendTo("saveImg", [canvasP1.toDataURL("image/jpeg", 0.8), "Home"]);
+                            }, 1000);
+                        }
+                    }
+                    if (param.homeCool > 0) {
+                        param.pause = 1;
+                        setTimeout(() => {
+                            param.pause = 0;
+                        }, param.homeCool * 1000);
+                    } else {
+                        param.homeUse = false;
+                        param.tellUse = false;
+                        param.timer1Use = false;
+                        param.timer2Use = false;
+                        param.timer3Use = false;
+                    }
+                }
+            }
+        }
+
+        // 물약없음 귀환
+        if (param.potionHomeUse) {
+            if (param.noPotion == "없음") {
+                param.potionCount += 1;
+                if (param.potionCount > 1) {
+                    param.potionCount = 0;
+                    // 2회 작동
+                    sendTo("sendKey", [param.controlHwnd, param.homeKey]);
+                    setTimeout(() => { sendTo("sendKey", [param.controlHwnd, param.homeKey]) }, 1000);
+                    setTimeout(() => {
+                        sendTo("sendTelegramPhoto", ["캐릭터 귀환 - 물약없음.", canvasP1.toDataURL("image/jpeg", 0.4)]);
+                        sendTo("saveImg", [canvasP1.toDataURL("image/jpeg", 0.8), "Home"]);
+                    }, 1000);
+                    param.potionHomeUse = false;
+                    param.homeUse = false;
+                    param.tellUse = false;
+                    param.timer1Use = false;
+                    param.timer2Use = false;
+                    param.timer3Use = false;
+                }
+            }
+        }
+
+        // 전투대응
+        if (param.pkUse) {
+            if (param.inCombat == "전투" && param.pkInCool == false) {
+                param.pkCount += 1;
+                if (param.pkCount > 1) {
+                    param.pkCount = 0;
+                    sendTo("sendTelegram", "전투상황 대응.");
+                    sendTo("saveImg", [canvasP1.toDataURL("image/jpeg", 0.8), "Combat"]);
+                    // 입력대기시간 적용
+                    setTimeout(() => {
+                        sendTo("sendKey", [param.controlHwnd, param.pkKey]);
+                        param.pkInCool = true;
+                        setTimeout(() => { param.pkInCool = false }, param.pkCool * 1000);
+                    }, param.pkPreCool * 1000);
+                }
+            }
+        }
+
+
+        // 순간이동
+        if (param.tellUse) {
+            if (param.hpp >= param.tellRange.min && param.hpp <= param.tellRange.max && param.tellInCool == false) {
+                param.tellCount += 1;
+                if (param.tellCount > 1) {
+                    param.tellCount = 0;
+                    sendTo("sendTelegram", "캐릭터 순간이동 - 체력낮음.");
+                    sendTo("saveImg", [canvasP1.toDataURL("image/jpeg", 0.8), "Tell"]);
+                    sendTo("sendKey", [param.controlHwnd, param.tellKey]);
+                    param.tellInCool = true;
+                    setTimeout(() => { param.tellInCool = false }, param.tellCool * 1000);
+                }
+            }
+        }
+
+        // 만능 타이머1
+        if (param.timer1Use) {
+            if (param.hpp >= param.timer1HPRange.min && param.hpp <= param.timer1HPRange.max && param.mpp >= param.timer1MPRange.min && param.mpp <= param.timer1MPRange.max && param.timer1InCool == false) {
+                param.timer1Count += 1;
+                if (param.timer1Count > 1) {
+                    param.timer1Count = 0;
+                    sendTo("sendKey", [param.controlHwnd, param.timer1Key]);
+                    if (param.timer1Double) {
+                        setTimeout(() => { sendTo("sendKey", [param.controlHwnd, param.timer1Key]) }, 200);
+                    }
+                    param.timer1InCool = true;
+                    setTimeout(() => { param.timer1InCool = false }, param.timer1Cool * 1000);
+                }
+            }
+        }
+
+        // 만능 타이머2
+        if (param.timer2Use) {
+            if (param.hpp >= param.timer2HPRange.min && param.hpp <= param.timer2HPRange.max && param.mpp >= param.timer2MPRange.min && param.mpp <= param.timer2MPRange.max && param.timer2InCool == false) {
+                param.timer2Count += 1;
+                if (param.timer2Count > 1) {
+                    param.timer2Count = 0;
+                    sendTo("sendKey", [param.controlHwnd, param.timer2Key]);
+                    if (param.timer1Double) {
+                        setTimeout(() => { sendTo("sendKey", [param.controlHwnd, param.timer2Key]) }, 200);
+                    }
+                    param.timer2InCool = true;
+                    setTimeout(() => { param.timer2InCool = false }, param.timer2Cool * 1000);
+                }
+            }
+        }
+
+        // 만능 타이머3
+        if (param.timer3Use) {
+            if (param.hpp >= param.timer3HPRange.min && param.hpp <= param.timer3HPRange.max && param.mpp >= param.timer3MPRange.min && param.mpp <= param.timer3MPRange.max && param.timer3InCool == false) {
+                param.timer3Count += 1;
+                if (param.timer3Count > 1) {
+                    param.timer3Count = 0;
+                    sendTo("sendKey", [param.controlHwnd, param.timer3Key]);
+                    if (param.timer1Double) {
+                        setTimeout(() => { sendTo("sendKey", [param.controlHwnd, param.timer3Key]) }, 200);
+                    }
+                    param.timer3InCool = true;
+                    setTimeout(() => { param.timer3InCool = false }, param.timer3Cool * 1000);
+                }
+            }
+        }
+    }
+
+    const P1 = new Tweakpane.Pane({ title: "캐릭터 설정", container: document.getElementById("container") });
+    P1.registerPlugin(TweakpaneEssentialsPlugin);
+    P1.registerPlugin(TweakpaneImagePlugin);
+    P1.addBlade({
+        view: "buttongrid",
+        size: [4, 1],
+        index: 0,
+        cells: (x) => ({
+            title: ["시작", "가방열기", "저장", "불러오기"][x],
+        }),
+    }).on("click", (ev) => {
+        if (ev.index[0] == 0) startCapture(); // 시작
+        else if (ev.index[0] == 1) sendTo("sendKey", [paramP1.controlHwnd, "i"]);
+        else if (ev.index[0] == 2) saveData();
+        else if (ev.index[0] == 3) loadData();
+    });
+
+    P1.addInput(paramP1, "pause", {
+        view: "radiogrid",
+        groupName: "pause",
+        size: [2, 1],
+        cells: (x) => ({
+            title: ["일시정지", "작동 중"][x],
+            value: [1, 0][x]
+        }),
+        label: "실행상태",
+        index: 2,
+    });
+
+    P1.addInput(paramP1, "imgHp", {
+        view: 'input-image',
+        label: "체력",
+        imageFit: 'contain',
+    });
+    P1.addInput(paramP1, "imgMp", {
+        view: 'input-image',
+        label: "마나",
+        imageFit: 'contain',
+    });
+    P1.addMonitor(paramP1, "info", { label: "메시지", multiline: true, lineCount: 3, index: 7 });
+    const settingP1 = P1.addFolder({ title: "기능 설정", expanded: false });
+    const homeFolder = settingP1.addFolder({ title: "자동 귀환", expanded: false });
+    homeFolder.addInput(paramP1, "homeUse", { label: "사용" });
+    homeFolder.addInput(paramP1, "homeRange", { label: "구간(HP)", min: 0, max: 100, step: 1 });
+    homeFolder.addInput(paramP1, "homeKey", { label: "사용 키" });
+    homeFolder.addInput(paramP1, "homeCool", { label: "재사용대기시간" });
+    homeFolder.addInput(paramP1, "homeKeyCount", { label: "반복입력 횟수", step: 1 });
+    homeFolder.addInput(paramP1, "homeKeyDelay", { label: "반복입력 딜레이", step: 0.1 });
+    homeFolder.addInput(paramP1, "potionHomeUse", { label: "물약오링 귀환" });
+    homeFolder.addInput(paramP1, "noPotion", { label: "현재상태" });
+    homeFolder.addInput(paramP1, "potionThres", { label: "물약오링 유사도", min: 0.05, max: 1.0 });
+
+    const tellFolder = settingP1.addFolder({ title: "자동 순간이동", expanded: false });
+    tellFolder.addInput(paramP1, "tellUse", { label: "사용" });
+    tellFolder.addInput(paramP1, "tellRange", { label: "구간(HP)", min: 0, max: 100, step: 1 });
+    tellFolder.addInput(paramP1, "tellKey", { label: "사용 키" });
+    tellFolder.addInput(paramP1, "tellCool", { label: "재사용대기시간", step: 1 });
+
+    const pkFolder = settingP1.addFolder({ title: "전투대응", expanded: false });
+    pkFolder.addInput(paramP1, "pkUse", { label: "사용" });
+    pkFolder.addInput(paramP1, "pkKey", { label: "사용 키" });
+    pkFolder.addInput(paramP1, "pkPreCool", { label: "입력대기시간" });
+    pkFolder.addInput(paramP1, "pkCool", { label: "재사용대기시간" });
+    pkFolder.addInput(paramP1, "inCombat", { label: "현재상태" });
+    pkFolder.addInput(paramP1, "pkThres", { label: "유사도", min: 0.05, max: 1.0 });
+
+    const timer1Folder = settingP1.addFolder({ title: "만능 타이머-1", expanded: false });
+    timer1Folder.addInput(paramP1, "timer1Use", { label: "사용" });
+    timer1Folder.addInput(paramP1, "timer1HPRange", { label: "구간(HP)", min: 0, max: 100, step: 1 });
+    timer1Folder.addInput(paramP1, "timer1MPRange", { label: "구간(MP)", min: 0, max: 100, step: 1 });
+    timer1Folder.addInput(paramP1, "timer1Key", { label: "사용 키" });
+    timer1Folder.addInput(paramP1, "timer1Cool", { label: "재사용대기시간", step: 1 });
+    timer1Folder.addInput(paramP1, "timer1Double", { label: "더블클릭" });
+
+    const timer2Folder = settingP1.addFolder({ title: "만능 타이머-2", expanded: false });
+    timer2Folder.addInput(paramP1, "timer2Use", { label: "사용" });
+    timer2Folder.addInput(paramP1, "timer2HPRange", { label: "구간(HP)", min: 0, max: 100, step: 1 });
+    timer2Folder.addInput(paramP1, "timer2MPRange", { label: "구간(MP)", min: 0, max: 100, step: 1 });
+    timer2Folder.addInput(paramP1, "timer2Key", { label: "사용 키" });
+    timer2Folder.addInput(paramP1, "timer2Cool", { label: "재사용대기시간", step: 1 });
+    timer2Folder.addInput(paramP1, "timer2Double", { label: "더블클릭" });
+
+    const timer3Folder = settingP1.addFolder({ title: "만능 타이머-3", expanded: false });
+    timer3Folder.addInput(paramP1, "timer3Use", { label: "사용" });
+    timer3Folder.addInput(paramP1, "timer3HPRange", { label: "구간(HP)", min: 0, max: 100, step: 1 });
+    timer3Folder.addInput(paramP1, "timer3MPRange", { label: "구간(MP)", min: 0, max: 100, step: 1 });
+    timer3Folder.addInput(paramP1, "timer3Key", { label: "사용 키" });
+    timer3Folder.addInput(paramP1, "timer3Cool", { label: "재사용대기시간", step: 1 });
+    timer3Folder.addInput(paramP1, "timer3Double", { label: "더블클릭" });
+
+    const captureP1 = P1.addFolder({ title: "캡처 세부설정", expanded: false });
+    captureP1.addInput(paramP1, "checkPos", { label: "캡처 확인" }).on("change", (ev) => {
+        canvasP1.style.display = ev.value ? "block" : "none";
+    });
+    const dirList = [["🡹", "🡻", "🡸", "🡺"], ["너비+", "너비-", "높이+", "높이-"]];
+    captureP1.addBlade({
+        view: "buttongrid",
+        size: [4, 2],
+        label: "HP위치이동",
+        cells: (x, y) => ({
+            title: dirList[y][x],
+        }),
+    }).on("click", (ev) => {
+        if (ev.index[0] == 0 && ev.index[1] == 0) paramP1.hpPos.y -= 1;
+        else if (ev.index[0] == 1 && ev.index[1] == 0) paramP1.hpPos.y += 1;
+        else if (ev.index[0] == 2 && ev.index[1] == 0) paramP1.hpPos.x -= 1;
+        else if (ev.index[0] == 3 && ev.index[1] == 0) paramP1.hpPos.x += 1;
+        else if (ev.index[0] == 0 && ev.index[1] == 1) paramP1.hpPos.w += 1;
+        else if (ev.index[0] == 1 && ev.index[1] == 1) paramP1.hpPos.w -= 1;
+        else if (ev.index[0] == 2 && ev.index[1] == 1) paramP1.hpPos.h += 1;
+        else if (ev.index[0] == 3 && ev.index[1] == 1) paramP1.hpPos.h -= 1;
+    });
+    captureP1.addBlade({
+        view: "buttongrid",
+        size: [4, 2],
+        label: "MP위치이동",
+        cells: (x, y) => ({
+            title: dirList[y][x],
+        }),
+    }).on("click", (ev) => {
+        evt = ev;
+        if (ev.index[0] == 0 && ev.index[1] == 0) paramP1.mpPos.y -= 1;
+        else if (ev.index[0] == 1 && ev.index[1] == 0) paramP1.mpPos.y += 1;
+        else if (ev.index[0] == 2 && ev.index[1] == 0) paramP1.mpPos.x -= 1;
+        else if (ev.index[0] == 3 && ev.index[1] == 0) paramP1.mpPos.x += 1;
+        else if (ev.index[0] == 0 && ev.index[1] == 1) paramP1.mpPos.w += 1;
+        else if (ev.index[0] == 1 && ev.index[1] == 1) paramP1.mpPos.w -= 1;
+        else if (ev.index[0] == 2 && ev.index[1] == 1) paramP1.mpPos.h += 1;
+        else if (ev.index[0] == 3 && ev.index[1] == 1) paramP1.mpPos.h -= 1;
+    });
+
+    const etcFolder = P1.addFolder({ title: "기타", expanded: false });
+    etcFolder.addInput(paramP1, "donaURL", {
+        view: "input-image",
+        imageFit: "contain",
+        label: "카카오톡 후원"
+    });
+    etcFolder.addButton({ title: "사용방법 확인하기" }).on("click", () => {
+        window.open("https://mandloh.tistory.com/115");
+    });
+
+    // 그림창 크기 수정
+    const el = document.getElementsByClassName("tp-imgv tp-imgv_area_root");
+    el[0].style.height = "15px"; // HP
+    el[1].style.height = "15px"; // MP
+    el[2].style.height = "100px"; // Donation
+</script>
+
+</html>
