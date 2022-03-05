@@ -141,15 +141,16 @@
             for (win of text) {
                 if (win[0].includes("리니지W l")) paramP1.hwndOpt[win[0]] = win[1];
             }
-            P1.addInput(paramP1, "controlHwnd", { options: paramP1.hwndOpt, label: "제어창", index: 1 });
+            P1.addInput(paramP1, "captureHwnd", { options: paramP1.hwndOpt, label: "캡처창", index: 1 });
+            P1.addInput(paramP1, "controlHwnd", { options: paramP1.hwndOpt, label: "제어창", index: 2 });
         } else if (type == "connectTelegram") {
             console.log(text);
         } else if (type == "processHp") {
             paramP1.hpp = text;
-            P1.children[3].label = `체력: ${paramP1.hpp}%`;
+            P1.children[4].label = `체력: ${paramP1.hpp}%`;
         } else if (type == "processMp") {
             paramP1.mpp = text;
-            P1.children[4].label = `마나: ${paramP1.mpp}%`;
+            P1.children[5].label = `마나: ${paramP1.mpp}%`;
         } else if (type == "findPotion") {
             paramP1.noPotion = (text > 0) ? "없음" : "있음";
         } else if (type == "findPk") {
@@ -434,7 +435,7 @@
             value: [1, 0][x]
         }),
         label: "실행상태",
-        index: 2,
+        index: 3,
     });
 
     P1.addInput(paramP1, "imgHp", {
@@ -447,7 +448,7 @@
         label: "마나",
         imageFit: 'contain',
     });
-    P1.addMonitor(paramP1, "info", { label: "메시지", multiline: true, lineCount: 3, index: 7 });
+    P1.addMonitor(paramP1, "info", { label: "메시지", multiline: true, lineCount: 3});
     const settingP1 = P1.addFolder({ title: "기능 설정", expanded: false });
     const homeFolder = settingP1.addFolder({ title: "자동 귀환", expanded: false });
     homeFolder.addInput(paramP1, "homeUse", { label: "사용" });
