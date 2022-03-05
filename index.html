@@ -139,7 +139,7 @@
         const text = msg.text;
         if (type == "getWinList") {
             for (win of text) {
-                if (win[0].includes("리니지W")) paramP1.hwndOpt[win[0]] = win[1];
+                if (win[0].includes("리니지W l")) paramP1.hwndOpt[win[0]] = win[1];
             }
             P1.addInput(paramP1, "controlHwnd", { options: paramP1.hwndOpt, label: "제어창", index: 1 });
         } else if (type == "connectTelegram") {
