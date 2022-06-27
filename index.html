@@ -3,7 +3,7 @@
 
 <head>
     <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
-    <title>리니지W HP분석</title>
+    <title>리니지W 이미지 분석</title>
 
 </head>
 <style>
@@ -46,14 +46,17 @@
         <div class="nes-container with-title">
             <p class="title">화면 캡처</p>
             <canvas id="hpImg"></canvas>
+            <canvas id="mpImg"></canvas>
             <br>
             <canvas id="hpImgRed"></canvas>
+            <canvas id="mpImgBlue"></canvas>
             <br>
             <canvas id="hpImgBlur"></canvas>
             <br>
             <canvas id="hpImgThres"></canvas>
             <br>
             <span id="hpRate" class="nes-text">HP: </span>
+            <span id="mpRate" class="nes-text">MP: </span>
             <video id="video" style="display:none" autoplay></video>
         </div>
     </div>
@@ -85,7 +88,7 @@
         canvasFull.height = video.videoHeight;
         ctxFull.drawImage(video, 0, 0, canvasFull.width, canvasFull.height, 0, 0, 1280, 720);
 
-        //1280x720 이미지에서 필요한 부분 잘라오기
+        //1280x720 이미지에서 HP 부분 잘라오기
         canvas.width = hpPos.w;
         canvas.height = hpPos.h;
         ctx.drawImage(canvasFull, hpPos.x, hpPos.y, hpPos.w, hpPos.h, 0, 0, hpPos.w, hpPos.h);
@@ -128,14 +131,56 @@
             const value = idx < 0 ? hpImg.size().width : idx;
             hpMaxAry.push(value);
         }
-        
+
         //hpMaxAry의 가장 작은값 찾아 HP비율로 계산
         const hpMinIdx = Math.min.apply(null, hpMaxAry) < 0 ? 0 : Math.min.apply(null, hpMaxAry);
         const hpRatio = Math.round((hpThres.size().width - hpMinIdx) / hpThres.size().width * 100);
         document.getElementById("hpRate").innerHTML = `HP : ${hpRatio}%`;
+        console.log(hpMaxAry);
 
+        
+        //1280x720 이미지에서 MP 부분 잘라오기
+        canvas.width = mpPos.w;
+        canvas.height = mpPos.h;
+        ctx.drawImage(canvasFull, mpPos.x, mpPos.y, mpPos.w, mpPos.h, 0, 0, mpPos.w, mpPos.h);
+        const mpImg = cv.imread(canvas);
+
+        //MP Blue 값만 추출하기
+        const mpLow = new cv.Mat(mpImg.rows, mpImg.cols, mpImg.type(), [60, 110, 125, 0]);
+        const mpHigh = new cv.Mat(mpImg.rows, mpImg.cols, mpImg.type(), [120, 200, 200, 255]);
+        const mpBlue = new cv.Mat();
+        cv.inRange(mpImg, mpLow, mpHigh, mpBlue);
+        cv.imshow("mpImgBlue", mpBlue);
+
+        //MP 계산하기
+        const mpData1D = [];
+        const mpData2D = [];
+        const mpMaxAry = [];
+
+        //MP cv.Mat 데이터를 JS array로 가져오기
+        mpBlue.data.forEach(value => mpData1D.push(value));
+
+        //MP 1차원 데이터를 2차원(x, y)으로 분리하기
+        while(mpData1D.length) mpData2D.push(mpData1D.splice(0, mpBlue.size().width));
+
+        //배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)   
+        for(i=0; i<mpData2D.length; i++) {
+            // fix. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
+            const idx = mpData2D[i].reverse().indexOf(255);
+            const value = idx < 0 ? mpImg.size().width : idx;
+            mpMaxAry.push(value);
+        }
+
+        //mpMaxAry의 가장 작은값 찾아 HP비율로 계산
+        const mpMinIdx = Math.min.apply(null, mpMaxAry) < 0 ? 0 : Math.min.apply(null, mpMaxAry);
+        const mpRatio = Math.round((mpBlue.size().width - mpMinIdx) / mpBlue.size().width * 100);
+        document.getElementById("mpRate").innerHTML = `MP : ${mpRatio}%`;
+
+
+        cv.imshow("mpImg", mpImg);
         setTimeout(mainLoop, 200);
-        hpImg.delete();
+        // hpImg.delete();
+        // mpImg.delete();
     }
 </script>
 
