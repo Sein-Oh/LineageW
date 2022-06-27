@@ -122,7 +122,12 @@
         while(hpData1D.length) hpData2D.push(hpData1D.splice(0, hpThres.size().width));
 
         //배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)
-        for(i=0; i<hpData2D.length; i++) hpMaxAry.push(hpData2D[i].reverse().indexOf(255));
+        for(i=0; i<hpData2D.length; i++) {
+            // 수정. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
+            const idx = hpData2D[i].reverse().indexOf(255);
+            const value = idx < 0 ? hpImg.size().width : idx;
+            hpMaxAry.push(value);
+        }
         
         //hpMaxAry의 가장 작은값 찾아 HP비율로 계산
         const hpMinIdx = Math.min.apply(null, hpMaxAry) < 0 ? 0 : Math.min.apply(null, hpMaxAry);
