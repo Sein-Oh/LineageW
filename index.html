@@ -1,8 +1,9 @@
+<!-- load_local_file.html -->
 <!DOCTYPE html>
 <html>
 
 <head>
-    <title>리니지W 모니터링</title>
+    <title>리니지W</title>
     <style>
         body {
             background-color: gray;
@@ -28,7 +29,7 @@
         }
 
         button {
-            width: 150px;
+            width: 120px;
             background-color: transparent;
             color: white;
             border: 1px solid white;
@@ -62,6 +63,7 @@
     <div class="container">
         <button id="start" class="toggle" onclick="loadFile()">START</button>
         <button id="run" class="toggle" onclick="run()">RUN</button>
+        <button id="test" onclick="test()">TEST</button>
         <button id="show" class="toggle" onclick="showDetails()">DETAILS</button>
         <button onclick="help()">HELP</button>
     </div>
@@ -120,7 +122,7 @@
 
     // document.querySelectorAll("button.toggle").forEach(element => element.addEventListener("click", () => element.classList.toggle("on")));
     const help = () => {
-        alert("F12 버튼을 눌러 콘솔창을 확인하세요.");
+        alert("https://mandloh.tistory.com/135");
     }
 
     const loadFile = () => {
@@ -167,6 +169,12 @@
         console.log("Send: " + data);
         const dataArrayBuffer = encoder.encode(data);
         writer.write(dataArrayBuffer);
+    }
+
+    const test = () => {
+        for (i=0; i<5; i++) {
+            setTimeout(() => send('i'), i*1000);
+        }
     }
 
     const run = () => {
