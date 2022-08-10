@@ -2,85 +2,185 @@
 <html>
 
 <head>
-    <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
-    <title>리니지W 이미지 분석</title>
+    <title>리니지W 모니터링</title>
+    <style>
+        body {
+            background-color: gray;
+            font-size: 22px;
+            color: white;
+        }
 
+        video {
+            border: 1px solid white;
+            border-radius: 5px;
+            margin-top: 5px;
+            width: 640px;
+            height: 360px;
+        }
+
+        div.container {
+            width: 640px;
+            text-align: center;
+        }
+
+        div.container.hide {
+            display: none;
+        }
+
+        button {
+            width: 150px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            border-radius: 5px;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        button.toggle {
+            color: white;
+        }
+
+        button.on {
+            color: white;
+            text-shadow:
+                0 0 7px #0fa, 0 0 10px #0fa, 0 0 21px #0fa, 0 0 32px #0fa, 0 0 52px #0fa;
+        }
+
+        button:hover {
+            box-shadow: 0 0 7px white;
+        }
+
+        button:active {
+            box-shadow: 0 0 7px white, 0 0 10px white;
+        }
+    </style>
+    <script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
 </head>
-<style>
-    @font-face {
-        font-family: 'DungGeunMo';
-        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
-        font-weight: normal;
-        font-style: normal;
-    }
-
-    body {
-        font-family: "DungGeunMo";
-    }
-</style>
 
 <body>
-    <div style="width:700px">
-        <br>
-        <div class="nes-container with-title">
-            <p class="title">메인 메뉴</p>
-            <button class="nes-btn is-success" onclick="startCapture()">캡처창 선택</button>
-            <button class="nes-btn" onclick="document.getElementById('dialog-rounded').showModal()">사용 방법</button>
-            <section>
-                <dialog class="nes-dialog is-rounded" id="dialog-rounded">
-                    <form method="dialog">
-                        <div>** Microsoft Edge 기준입니다 **</div>
-                        <div class="lists">
-                            <ul class="nes-list is-circle">
-                                <li>[캡처창 선택] 버튼을 누른다</li>
-                                <li>[Window] -> [캡처할 앱]을 선택한다</li>
-                                <li>[공유]버튼을 누른다</li>
-                            </ul>
-                        </div>
-                        <button class="nes-btn is-error" style="float:right">닫기</button>
-                    </form>
-                </dialog>
-            </section>
-        </div>
-        <br>
-        <div class="nes-container with-title">
-            <p class="title">화면 캡처</p>
-            <canvas id="hpImg"></canvas>
-            <canvas id="mpImg"></canvas>
-            <br>
-            <canvas id="hpImgRed"></canvas>
-            <canvas id="mpImgBlue"></canvas>
-            <br>
-            <canvas id="hpImgBlur"></canvas>
-            <br>
-            <canvas id="hpImgThres"></canvas>
-            <br>
-            <span id="hpRate" class="nes-text">HP: </span>
-            <span id="mpRate" class="nes-text">MP: </span>
-            <video id="video" style="display:none" autoplay></video>
-        </div>
+    <div class="container">
+        <button id="start" class="toggle" onclick="loadFile()">START</button>
+        <button id="run" class="toggle" onclick="run()">RUN</button>
+        <button id="show" class="toggle" onclick="showDetails()">DETAILS</button>
+        <button onclick="help()">HELP</button>
     </div>
-
+    <video id="video" autoplay></video>
+    <br>
+    <div id="info"></div>
+    <div id="details" class="container hide">
+        <canvas id="hpImg"></canvas>
+        <canvas id="hpImgRed"></canvas>
+        <canvas id="hpImgBlur"></canvas>
+        <canvas id="hpImgThres"></canvas>
+        <canvas id="mpImg"></canvas>
+        <canvas id="mpImgBlue"></canvas>
+    </div>
 </body>
-<script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="console.log('opencv ready.')"
-    type="text/javascript"></script>
-<script>
-    const video = document.getElementById("video");
+<script defer>
+    let data, port, reader, writer;
+    let running = false;
+    const encoder = new TextEncoder();
+    const video = document.querySelector("#video");
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const hpPos = { x: 92, y: 32, w: 284 - 88, h: 39 - 32 };
-    const mpPos = { x: 92, y: 46, w: 284 - 100, h: 52 - 45 };
+    let userData;
 
+    const showDetails = () => {
+        if (document.querySelector("#details").classList.value.includes("hide")) {
+            document.querySelector("#details").classList.remove("hide");
+            document.querySelector("#show").classList.add("on");
+        } else {
+            document.querySelector("#details").classList.add("hide");
+            document.querySelector("#show").classList.remove("on");
+        }
+        
+        
+    }
+
+    const cvReady = () => {
+        console.log("opencv ready.");
+    }
     const startCapture = async () => {
         video.srcObject = await navigator.mediaDevices.getDisplayMedia({
             video: { cursor: "always", frameRate: { ideal: 5, max: 5 } },
             audio: false,
         });
         console.log("capture start.");
-        setTimeout(mainLoop, 1000);
+        setTimeout(captureLoop, 500);
+        connect();
     }
 
-    const mainLoop = () => {
+    const stopCapture = () => {
+        const tracks = video.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+        video.srcObject = null;
+    }
+
+
+    // document.querySelectorAll("button.toggle").forEach(element => element.addEventListener("click", () => element.classList.toggle("on")));
+    const help = () => {
+        alert("F12 버튼을 눌러 콘솔창을 확인하세요.");
+    }
+
+    const loadFile = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.onchange = evt => {
+            const selectedFile = evt.target.files[0];
+            processJSON(selectedFile);
+        };
+        input.click();
+    }
+
+    const processJSON = file => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                data = JSON.parse(reader.result);
+                console.log(data);
+                document.querySelector("#start").classList.add("on");
+                userData = data;
+                startCapture();
+            } catch (error) {
+                alert("파일이 올바르지 않습니다. json 형식의 파일을 선택하세요.");
+                document.querySelector("#start").classList.remove("on");
+            }
+        }
+        reader.readAsText(file);
+    }
+
+    const connect = async () => {
+        try {
+            port = await navigator.serial.requestPort();
+            await port.open({ baudRate: 9600 });
+            reader = port.readable.getReader();
+            writer = port.writable.getWriter();
+            console.log("연결되었습니다.");
+        } catch (err) {
+            console.error("Error: " + err);
+            document.querySelector("#start").classList.remove("on");
+        }
+    }
+
+    const send = (data) => {
+        console.log("Send: " + data);
+        const dataArrayBuffer = encoder.encode(data);
+        writer.write(dataArrayBuffer);
+    }
+
+    const run = () => {
+        //ON되어있는 상태
+        if (document.querySelector("#run").classList.value.includes("on")) {
+            running = false;
+            document.querySelector("#run").classList.remove("on");
+        } else {
+            running = true;
+            document.querySelector("#run").classList.add("on");
+        }
+    }
+
+    const captureLoop = () => {
         //video 이미지를 1280x720으로 불러오기
         const canvasFull = document.createElement("canvas");
         const ctxFull = canvasFull.getContext("2d");
@@ -89,9 +189,9 @@
         ctxFull.drawImage(video, 0, 0, canvasFull.width, canvasFull.height, 0, 0, 1280, 720);
 
         //1280x720 이미지에서 HP 부분 잘라오기
-        canvas.width = hpPos.w;
-        canvas.height = hpPos.h;
-        ctx.drawImage(canvasFull, hpPos.x, hpPos.y, hpPos.w, hpPos.h, 0, 0, hpPos.w, hpPos.h);
+        canvas.width = userData.capture.hpPos.w;
+        canvas.height = userData.capture.hpPos.h;
+        ctx.drawImage(canvasFull, userData.capture.hpPos.x, userData.capture.hpPos.y, userData.capture.hpPos.w, userData.capture.hpPos.h, 0, 0, userData.capture.hpPos.w, userData.capture.hpPos.h);
         const hpImg = cv.imread(canvas);
         cv.imshow("hpImg", hpImg);
 
@@ -103,7 +203,7 @@
 
         //HP 블러 처리하기
         const hpBlur = new cv.Mat();
-        const ksize = new cv.Size(5,5);
+        const ksize = new cv.Size(5, 5);
         const anchor = new cv.Point(-1, -1)
         cv.blur(hpRed, hpBlur, ksize, anchor, cv.BORDER_DEFAULT);
         cv.imshow("hpImgBlur", hpBlur);
@@ -122,10 +222,10 @@
         hpThres.data.forEach(value => hpData1D.push(value));
 
         //HP 1차원 데이터를 2차원(x, y)으로 분리하기
-        while(hpData1D.length) hpData2D.push(hpData1D.splice(0, hpThres.size().width));
+        while (hpData1D.length) hpData2D.push(hpData1D.splice(0, hpThres.size().width));
 
         //배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)
-        for(i=0; i<hpData2D.length; i++) {
+        for (i = 0; i < hpData2D.length; i++) {
             // 수정. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
             const idx = hpData2D[i].reverse().indexOf(255);
             const value = idx < 0 ? hpImg.size().width : idx;
@@ -135,14 +235,11 @@
         //hpMaxAry의 가장 작은값 찾아 HP비율로 계산
         const hpMinIdx = Math.min.apply(null, hpMaxAry) < 0 ? 0 : Math.min.apply(null, hpMaxAry);
         const hpRatio = Math.round((hpThres.size().width - hpMinIdx) / hpThres.size().width * 100);
-        document.getElementById("hpRate").innerHTML = `HP : ${hpRatio}%`;
-        console.log(hpMaxAry);
 
-        
         //1280x720 이미지에서 MP 부분 잘라오기
-        canvas.width = mpPos.w;
-        canvas.height = mpPos.h;
-        ctx.drawImage(canvasFull, mpPos.x, mpPos.y, mpPos.w, mpPos.h, 0, 0, mpPos.w, mpPos.h);
+        canvas.width = userData.capture.mpPos.w;
+        canvas.height = userData.capture.mpPos.h;
+        ctx.drawImage(canvasFull, userData.capture.mpPos.x, userData.capture.mpPos.y, userData.capture.mpPos.w, userData.capture.mpPos.h, 0, 0, userData.capture.mpPos.w, userData.capture.mpPos.h);
         const mpImg = cv.imread(canvas);
 
         //MP Blue 값만 추출하기
@@ -161,10 +258,10 @@
         mpBlue.data.forEach(value => mpData1D.push(value));
 
         //MP 1차원 데이터를 2차원(x, y)으로 분리하기
-        while(mpData1D.length) mpData2D.push(mpData1D.splice(0, mpBlue.size().width));
+        while (mpData1D.length) mpData2D.push(mpData1D.splice(0, mpBlue.size().width));
 
         //배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)   
-        for(i=0; i<mpData2D.length; i++) {
+        for (i = 0; i < mpData2D.length; i++) {
             // fix. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
             const idx = mpData2D[i].reverse().indexOf(255);
             const value = idx < 0 ? mpImg.size().width : idx;
@@ -174,14 +271,31 @@
         //mpMaxAry의 가장 작은값 찾아 HP비율로 계산
         const mpMinIdx = Math.min.apply(null, mpMaxAry) < 0 ? 0 : Math.min.apply(null, mpMaxAry);
         const mpRatio = Math.round((mpBlue.size().width - mpMinIdx) / mpBlue.size().width * 100);
-        document.getElementById("mpRate").innerHTML = `MP : ${mpRatio}%`;
 
-
+        document.querySelector("#info").innerHTML = `[HP]${hpRatio}% / [MP]${mpRatio}%`;
+        // console.log(`인식값 : [HP]${hpRatio}% / [MP]${mpRatio}%`);
         cv.imshow("mpImg", mpImg);
-        setTimeout(mainLoop, 200);
-        // hpImg.delete();
-        // mpImg.delete();
+
+        // handling
+        if (running) {
+            // Auto home
+            if (userData.autoHome.use) {
+                if (hpRatio >= userData.autoHome.min && hpRatio <= userData.autoHome.max) {
+                    for (i=0; i<userData.autoHome.keyCount; i++) {
+                        setTimeout(() => {
+                            send(userData.autoHome.key);
+                            console.log("HOME");
+                        }, userData.autoHome.keyDelay * i * 1000);
+                    }
+                    running = false;
+                    document.querySelector("#run").classList.remove("on");
+                }
+            }
+        }
+        setTimeout(captureLoop, 300);
     }
+
+
 </script>
 
 </html>
