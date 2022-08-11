@@ -61,11 +61,11 @@
 
 <body>
     <div class="container">
-        <button id="start" class="toggle" onclick="loadFile()">START</button>
+        <button id="start" class="toggle" onclick="loadFile()">CAPTURE</button>
+        <button id="connect" class="toggle" onclick="connect()">ARDUINO</button>
         <button id="run" class="toggle" onclick="run()">RUN</button>
         <button id="test" onclick="test()">TEST</button>
         <button id="show" class="toggle" onclick="showDetails()">DETAILS</button>
-        <button onclick="help()">HELP</button>
     </div>
     <video id="video" autoplay></video>
     <br>
@@ -96,8 +96,6 @@
             document.querySelector("#details").classList.add("hide");
             document.querySelector("#show").classList.remove("on");
         }
-        
-        
     }
 
     const cvReady = () => {
@@ -110,7 +108,6 @@
         });
         console.log("capture start.");
         setTimeout(captureLoop, 500);
-        connect();
     }
 
     const stopCapture = () => {
@@ -121,9 +118,6 @@
 
 
     // document.querySelectorAll("button.toggle").forEach(element => element.addEventListener("click", () => element.classList.toggle("on")));
-    const help = () => {
-        alert("https://mandloh.tistory.com/135");
-    }
 
     const loadFile = () => {
         const input = document.createElement("input");
@@ -159,9 +153,11 @@
             reader = port.readable.getReader();
             writer = port.writable.getWriter();
             console.log("연결되었습니다.");
+            document.querySelector("#connect").classList.add("on");
+
         } catch (err) {
             console.error("Error: " + err);
-            document.querySelector("#start").classList.remove("on");
+            document.querySelector("#connect").classList.remove("on");
         }
     }
 
