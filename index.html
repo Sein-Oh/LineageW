@@ -77,16 +77,48 @@
         <canvas id="hpImgThres"></canvas>
         <canvas id="mpImg"></canvas>
         <canvas id="mpImgBlue"></canvas>
+        <canvas id="out1"></canvas>
+        <canvas id="out2"></canvas>
+        <canvas id="out3"></canvas>
     </div>
 </body>
 <script defer>
-    let data, port, reader, writer;
+    let port, writer, potionTarget;
     let running = false;
+    let potionEmpty = false;
     const encoder = new TextEncoder();
     const video = document.querySelector("#video");
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    let userData;
+    const potionEmptyImg = new Image();
+
+    const userData = {
+        "capture": {
+            "hpPos": { "x": 92, "y": 32, "w": 184, "h": 7 },
+            "mpPos": { "x": 92, "y": 46, "w": 184, "h": 7 }
+        },
+
+        "autoHome": {
+            "use": false,
+            "min": 5,
+            "max": 40,
+            "key": "8",
+            "keyCount": 4,
+            "keyDelay": 0.5
+        },
+
+        "potionHome": {
+            "use": false,
+            "key": "8",
+            "keyCount": 4,
+            "keyDelay": 0.5,
+            "x": 472,
+            "y": 635,
+            "w": 13,
+            "h": 13,
+            "thres": 1000000
+        }
+    }
 
     const showDetails = () => {
         if (document.querySelector("#details").classList.value.includes("hide")) {
@@ -100,6 +132,8 @@
 
     const cvReady = () => {
         console.log("opencv ready.");
+        potionEmptyImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAAXNSR0IArs4c6QAAAjdJREFUKFMdkE1LVGEAhZ/3fjj3Xp0740zmlBsx8gPTmHIRFAW1EaMpLapFQYSraNUmSGiRVrZpUwuhQCikiIJq4aIW/YGg2oY05pgbp5zr6NyZ+/G+4Zz94XnOEc8eXFcmCj2OCfw6cayQCqQEwzCw7ASNKES3LaSuEUkQL2YnVRJFolqltPSLQOpUvCpKgpt0SNoGbkeW2HWpJxKsV2uIN9PX1MbSTyzPwxQGxXKVOx8WQSkeX5xgb7IFYYDvtCIzGUq1BuL1zdMqWF3GajQw29r5uuYxs/iZndwrjDKQNsGv0tB1okyWWm4PYq4wrLJBDVuDTWnw3ZM8+vQFUEyNnqLfinAJiQDfTRH19yPmC8MqpwJMTeC3tPHDi5h697Gp9/B8gX1mQFqEhHFM2TAw8ocRrybyyt320DRBYCVZxeHG/AKUVnhy+xY5tUUiqKFpGp5lU+vtQyyM51Vqu4KUMYFps2EkmZyZpb5c5OXcUzq0ADP0mxsrCQu/dwDxfHxEdcoGpgzxlcZaZFAqexi6Rk9nlix1zLhBoGiSoh3SlV5XHd/fTVbWkZrBt3KN+80jYObsGAczFnpUJ7RbWQlC2g/lEZdHulWP69CXdhBCo7gVcvft+2Zp+sI5uswIXUh8yyFKpcgNDSKujh1R0abHxu8iI0ODOJZDHMcoqbASBokWjeKfEnbnbnoODGKnXcSlM8eUkJJ4u8bW33XCyj80GSNjST2KOHryBLu6cphJB63FwLEt/gPkt/XajD1j6gAAAABJRU5ErkJggg=="
+        setTimeout(() => { potionTarget = cv.imread(potionEmptyImg) }, 500);
     }
     const startCapture = async () => {
         video.srcObject = await navigator.mediaDevices.getDisplayMedia({
@@ -133,11 +167,22 @@
         const reader = new FileReader();
         reader.onload = () => {
             try {
-                data = JSON.parse(reader.result);
-                console.log(data);
-                document.querySelector("#start").classList.add("on");
-                userData = data;
+                const data = JSON.parse(reader.result);
+                Object.keys(data).forEach(mainKey => {
+                    if (mainKey == "capture") {
+                        Object.keys(data[mainKey]).forEach(key => {
+                            Object.keys(data[mainKey][key]).forEach(k => {
+                                userData[mainKey][key][k] = data[mainKey][key][k];
+                            });
+                        });
+                    } else {
+                        Object.keys(data[mainKey]).forEach(key => {
+                            userData[mainKey][key] = data[mainKey][key];
+                        });
+                    }
+                });
                 startCapture();
+                document.querySelector("#start").classList.add("on");
             } catch (error) {
                 alert("파일이 올바르지 않습니다. json 형식의 파일을 선택하세요.");
                 document.querySelector("#start").classList.remove("on");
@@ -168,8 +213,8 @@
     }
 
     const test = () => {
-        for (i=0; i<5; i++) {
-            setTimeout(() => send('i'), i*1000);
+        for (i = 0; i < 5; i++) {
+            setTimeout(() => send('i'), i * 1000);
         }
     }
 
@@ -191,6 +236,25 @@
         canvasFull.width = video.videoWidth;
         canvasFull.height = video.videoHeight;
         ctxFull.drawImage(video, 0, 0, canvasFull.width, canvasFull.height, 0, 0, 1280, 720);
+
+        //1280x720 이미지에서 물약이미지 잘라오기
+        canvas.width = userData.potionHome.w;
+        canvas.height = userData.potionHome.h;
+        ctx.drawImage(canvasFull, userData.potionHome.x, userData.potionHome.y, userData.potionHome.w, userData.potionHome.h, 0, 0, userData.potionHome.w, userData.potionHome.h);
+        const potionImg = cv.imread(canvas);
+        cv.imshow("out1", potionImg);
+
+        //물약 이미지 매칭
+        const templateResult = new cv.Mat();
+        const mask = new cv.Mat();
+        cv.matchTemplate(potionTarget, potionImg, templateResult, cv.TM_CCOEFF, mask);
+        const templateRoc = cv.minMaxLoc(templateResult, mask);
+        if (Math.round(templateRoc.maxVal) >= userData.potionHome.thres) {
+            console.log("물약오링이 감지되었습니다.");
+            potionEmpty = true;
+        } else {
+            potionEmpty = false;
+        }
 
         //1280x720 이미지에서 HP 부분 잘라오기
         canvas.width = userData.capture.hpPos.w;
@@ -285,11 +349,25 @@
             // Auto home
             if (userData.autoHome.use) {
                 if (hpRatio >= userData.autoHome.min && hpRatio <= userData.autoHome.max) {
-                    for (i=0; i<userData.autoHome.keyCount; i++) {
+                    for (i = 0; i < userData.autoHome.keyCount; i++) {
                         setTimeout(() => {
                             send(userData.autoHome.key);
                             console.log("HOME");
                         }, userData.autoHome.keyDelay * i * 1000);
+                    }
+                    running = false;
+                    document.querySelector("#run").classList.remove("on");
+                }
+            }
+
+            // Potion home
+            if (userData.potionHome.use) {
+                if (potionEmpty) {
+                    for (i = 0; i < userData.potionHome.keyCount; i++) {
+                        setTimeout(() => {
+                            send(userData.potionHome.key);
+                            console.log("HOME");
+                        }, userData.potionHome.keyDelay * i * 1000);
                     }
                     running = false;
                     document.querySelector("#run").classList.remove("on");
