@@ -1,9 +1,8 @@
-<!-- load_local_file.html -->
 <!DOCTYPE html>
 <html>
 
 <head>
-    <title>리니지W</title>
+    <title>LINEAGE W - 2022.08.12</title>
     <style>
         body {
             background-color: gray;
@@ -77,20 +76,20 @@
         <canvas id="hpImgThres"></canvas>
         <canvas id="mpImg"></canvas>
         <canvas id="mpImgBlue"></canvas>
-        <canvas id="out1"></canvas>
-        <canvas id="out2"></canvas>
-        <canvas id="out3"></canvas>
     </div>
 </body>
 <script defer>
-    let port, writer, potionTarget;
+    let port, writer, potionTarget, pkTarget;
     let running = false;
     let potionEmpty = false;
+    let onPk = false;
+    let cvLoad = false;
     const encoder = new TextEncoder();
     const video = document.querySelector("#video");
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const potionEmptyImg = new Image();
+    const pkImg = new Image();
 
     const userData = {
         "capture": {
@@ -107,6 +106,16 @@
             "keyDelay": 0.5
         },
 
+        "autoHeal": {
+            "use": false,
+            "min": 45,
+            "max": 70,
+            "mp": 30,
+            "key": "4",
+            "cooltime": 5,
+            "cool":false
+        },
+
         "potionHome": {
             "use": false,
             "key": "8",
@@ -116,6 +125,16 @@
             "y": 635,
             "w": 13,
             "h": 13,
+            "thres": 1000000
+        },
+
+        "pkAction": {
+            "use": false,
+            "key": "7",
+            "x": 1057,
+            "y": 533,
+            "w": 25,
+            "h": 25,
             "thres": 1000000
         }
     }
@@ -131,17 +150,26 @@
     }
 
     const cvReady = () => {
-        console.log("opencv ready.");
+        cvLoad = true;
+        console.log("Opencv ready.");
         potionEmptyImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAAXNSR0IArs4c6QAAAjdJREFUKFMdkE1LVGEAhZ/3fjj3Xp0740zmlBsx8gPTmHIRFAW1EaMpLapFQYSraNUmSGiRVrZpUwuhQCikiIJq4aIW/YGg2oY05pgbp5zr6NyZ+/G+4Zz94XnOEc8eXFcmCj2OCfw6cayQCqQEwzCw7ASNKES3LaSuEUkQL2YnVRJFolqltPSLQOpUvCpKgpt0SNoGbkeW2HWpJxKsV2uIN9PX1MbSTyzPwxQGxXKVOx8WQSkeX5xgb7IFYYDvtCIzGUq1BuL1zdMqWF3GajQw29r5uuYxs/iZndwrjDKQNsGv0tB1okyWWm4PYq4wrLJBDVuDTWnw3ZM8+vQFUEyNnqLfinAJiQDfTRH19yPmC8MqpwJMTeC3tPHDi5h697Gp9/B8gX1mQFqEhHFM2TAw8ocRrybyyt320DRBYCVZxeHG/AKUVnhy+xY5tUUiqKFpGp5lU+vtQyyM51Vqu4KUMYFps2EkmZyZpb5c5OXcUzq0ADP0mxsrCQu/dwDxfHxEdcoGpgzxlcZaZFAqexi6Rk9nlix1zLhBoGiSoh3SlV5XHd/fTVbWkZrBt3KN+80jYObsGAczFnpUJ7RbWQlC2g/lEZdHulWP69CXdhBCo7gVcvft+2Zp+sI5uswIXUh8yyFKpcgNDSKujh1R0abHxu8iI0ODOJZDHMcoqbASBokWjeKfEnbnbnoODGKnXcSlM8eUkJJ4u8bW33XCyj80GSNjST2KOHryBLu6cphJB63FwLEt/gPkt/XajD1j6gAAAABJRU5ErkJggg=="
-        setTimeout(() => { potionTarget = cv.imread(potionEmptyImg) }, 500);
+        pkImg.src = "data:image/png;base64,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"
+        setTimeout(() => {
+            potionTarget = cv.imread(potionEmptyImg);
+            pkTarget = cv.imread(pkImg);
+        }, 500);
     }
     const startCapture = async () => {
-        video.srcObject = await navigator.mediaDevices.getDisplayMedia({
-            video: { cursor: "always", frameRate: { ideal: 5, max: 5 } },
-            audio: false,
-        });
-        console.log("capture start.");
-        setTimeout(captureLoop, 500);
+        if (cvLoad) {
+            video.srcObject = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: "always", frameRate: { ideal: 5, max: 5 } },
+                audio: false,
+            });
+            console.log("캡처를 시작합니다.");
+            setTimeout(captureLoop, 500);
+        } else {
+            alert("Opencv.js가 로드되지 않았습니다.\n새로고침 후 다시 해보세요.");
+        }
     }
 
     const stopCapture = () => {
@@ -149,9 +177,6 @@
         tracks.forEach(track => track.stop());
         video.srcObject = null;
     }
-
-
-    // document.querySelectorAll("button.toggle").forEach(element => element.addEventListener("click", () => element.classList.toggle("on")));
 
     const loadFile = () => {
         const input = document.createElement("input");
@@ -184,7 +209,7 @@
                 startCapture();
                 document.querySelector("#start").classList.add("on");
             } catch (error) {
-                alert("파일이 올바르지 않습니다. json 형식의 파일을 선택하세요.");
+                alert("파일 불러오기에 실패했습니다.");
                 document.querySelector("#start").classList.remove("on");
             }
         }
@@ -197,11 +222,11 @@
             await port.open({ baudRate: 9600 });
             reader = port.readable.getReader();
             writer = port.writable.getWriter();
-            console.log("연결되었습니다.");
+            console.log("아두이노가 연결되었습니다.");
             document.querySelector("#connect").classList.add("on");
 
         } catch (err) {
-            console.error("Error: " + err);
+            console.error("에러: " + err);
             document.querySelector("#connect").classList.remove("on");
         }
     }
@@ -242,18 +267,35 @@
         canvas.height = userData.potionHome.h;
         ctx.drawImage(canvasFull, userData.potionHome.x, userData.potionHome.y, userData.potionHome.w, userData.potionHome.h, 0, 0, userData.potionHome.w, userData.potionHome.h);
         const potionImg = cv.imread(canvas);
-        cv.imshow("out1", potionImg);
 
         //물약 이미지 매칭
-        const templateResult = new cv.Mat();
-        const mask = new cv.Mat();
-        cv.matchTemplate(potionTarget, potionImg, templateResult, cv.TM_CCOEFF, mask);
-        const templateRoc = cv.minMaxLoc(templateResult, mask);
-        if (Math.round(templateRoc.maxVal) >= userData.potionHome.thres) {
-            console.log("물약오링이 감지되었습니다.");
+        const potionResult = new cv.Mat();
+        const potionMask = new cv.Mat();
+        cv.matchTemplate(potionTarget, potionImg, potionResult, cv.TM_CCOEFF, potionMask);
+        const potionRoc = cv.minMaxLoc(potionResult, potionMask);
+        if (Math.round(potionRoc.maxVal) >= userData.potionHome.thres) {
+            console.log("물약이 없습니다.");
             potionEmpty = true;
         } else {
             potionEmpty = false;
+        }
+
+        //1280x720 이미지에서 PK 부분 잘라오기
+        canvas.width = userData.pkAction.w;
+        canvas.height = userData.pkAction.h;
+        ctx.drawImage(canvasFull, userData.pkAction.x, userData.pkAction.y, userData.pkAction.w, userData.pkAction.h, 0, 0, userData.pkAction.w, userData.pkAction.h);
+        const pkImg = cv.imread(canvas);
+
+        //PK 이미지 매칭
+        const pkResult = new cv.Mat();
+        const pkMask = new cv.Mat();
+        cv.matchTemplate(pkTarget, pkImg, pkResult, cv.TM_CCOEFF, pkMask);
+        const pkRoc = cv.minMaxLoc(pkResult, pkMask);
+        if (Math.round(pkRoc.maxVal) >= userData.pkAction.thres) {
+            console.log("전투상태입니다.");
+            onPk = true;
+        } else {
+            onPk = false;
         }
 
         //1280x720 이미지에서 HP 부분 잘라오기
@@ -341,22 +383,34 @@
         const mpRatio = Math.round((mpBlue.size().width - mpMinIdx) / mpBlue.size().width * 100);
 
         document.querySelector("#info").innerHTML = `[HP]${hpRatio}% / [MP]${mpRatio}%`;
-        // console.log(`인식값 : [HP]${hpRatio}% / [MP]${mpRatio}%`);
         cv.imshow("mpImg", mpImg);
 
-        // handling
+        // 각종 기능 제어하기
         if (running) {
             // Auto home
             if (userData.autoHome.use) {
                 if (hpRatio >= userData.autoHome.min && hpRatio <= userData.autoHome.max) {
                     for (i = 0; i < userData.autoHome.keyCount; i++) {
                         setTimeout(() => {
+                            console.log("자동귀환이 실행되었습니다.");
                             send(userData.autoHome.key);
-                            console.log("HOME");
                         }, userData.autoHome.keyDelay * i * 1000);
                     }
                     running = false;
                     document.querySelector("#run").classList.remove("on");
+                }
+            }
+
+            // Auto heal
+            if (userData.autoHeal.use) {
+                if (hpRatio >= userData.autoHeal.min && hpRatio <= userData.autoHeal.max && mpRatio >= userData.autoHeal.mp && userData.autoHeal.cool == false) {
+                    console.log("힐을 사용합니다.");
+                    send(userData.autoHeal.key);
+                    userData.autoHeal.cool = true;
+                    setTimeout(() => {
+                        console.log("힐 쿨타임이 초기화되었습니다.")
+                        userData.autoHeal.cool = false;
+                    }, userData.autoHeal.cooltime * 1000);
                 }
             }
 
@@ -365,12 +419,20 @@
                 if (potionEmpty) {
                     for (i = 0; i < userData.potionHome.keyCount; i++) {
                         setTimeout(() => {
+                            console.log("물약이 없어 귀환했습니다.");
                             send(userData.potionHome.key);
-                            console.log("HOME");
                         }, userData.potionHome.keyDelay * i * 1000);
                     }
                     running = false;
                     document.querySelector("#run").classList.remove("on");
+                }
+            }
+
+            // PK action
+            if (userData.pkAction.use) {
+                if (onPk) {
+                    console.log("전투상황에 대응했습니다.");
+                    send(userData.pkAction.key);
                 }
             }
         }
