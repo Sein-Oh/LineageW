@@ -157,8 +157,9 @@
         setTimeout(() => {
             potionTarget = cv.imread(potionEmptyImg);
             pkTarget = cv.imread(pkImg);
-        }, 500);
+        }, 1000);
     }
+    
     const startCapture = async () => {
         if (cvLoad) {
             video.srcObject = await navigator.mediaDevices.getDisplayMedia({
@@ -436,10 +437,23 @@
                 }
             }
         }
+        potionImg.delete();
+        potionResult.delete();
+        potionMask.delete();
+        pkImg.delete();
+        pkResult.delete();
+        pkMask.delete();
+        hpImg.delete();
+        hpImgPlanes.delete();
+        hpRed.delete();
+        hpBlur.delete();
+        hpThres.delete();
+        mpLow.delete();
+        mpHigh.delete();
+        mpBlue.delete();
+        mpImg.delete();
         setTimeout(captureLoop, 300);
     }
-    
-    alert("안녕하세요? 만들오 입니다.\n블로그에 방문하여 업데이트를 확인하세요.\nhttps://mandloh.tistory.com/135");
 
 
 </script>
