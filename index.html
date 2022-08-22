@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>LINEAGE W - 2022.08.13</title>
+    <title>LINEAGE W - 2022.08.12</title>
     <style>
         body {
             background-color: gray;
@@ -136,6 +136,15 @@
             "w": 25,
             "h": 25,
             "thres": 1000000
+        },
+
+        "autoFunc": {
+            "use": false,
+            "key": "1",
+            "min": 25,
+            "max": 40,
+            "cooltime": 1,
+            "cool": false
         }
     }
 
@@ -345,7 +354,9 @@
 
         //hpMaxAry의 가장 작은값 찾아 HP비율로 계산
         const hpMinIdx = Math.min.apply(null, hpMaxAry) < 0 ? 0 : Math.min.apply(null, hpMaxAry);
-        const hpRatio = Math.round((hpThres.size().width - hpMinIdx) / hpThres.size().width * 100);
+        const hpRatio_ = Math.round((hpThres.size().width - hpMinIdx) / hpThres.size().width * 100);
+        //22.08.22 추가 - HP가 0인 경우 대부분 오류이므로 100%로 인식하도록 조치.
+        const hpRatio = hpRatio_ == 0 ? 100 : hpRatio_;
 
         //1280x720 이미지에서 MP 부분 잘라오기
         canvas.width = userData.capture.mpPos.w;
@@ -436,6 +447,18 @@
                     send(userData.pkAction.key);
                 }
             }
+
+            // Auto function
+            if (userData.autoFunc.use) {
+                if (hpRatio >= userData.autoFunc.min && hpRatio <= userData.autoFunc.max && userData.autoFunc.cool == false) {
+                    console.log("자동기능을 사용합니다.")
+                    send(userData.autoFunc.key);
+                    userData.autoFunc.cool = true;
+                    setTimeout(() => {
+                        userData.autoFunc.cool = false;
+                    }, userData.autoFunc.cooltime * 1000);
+                }
+            }
         }
         potionImg.delete();
         potionResult.delete();
@@ -454,6 +477,8 @@
         mpImg.delete();
         setTimeout(captureLoop, 300);
     }
+
+    alert("2022.08.22 업데이트.\n블로그 글을 참고해 주세요.\nhttps://mandloh.tistory.com/135");
 
 
 </script>
