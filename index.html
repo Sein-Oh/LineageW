@@ -138,7 +138,7 @@
             "thres": 1000000
         },
 
-        "autoFunc": {
+        "hpTimer": {
             "use": false,
             "key": "1",
             "min": 25,
@@ -449,14 +449,14 @@
             }
 
             // Auto function
-            if (userData.autoFunc.use) {
-                if (hpRatio >= userData.autoFunc.min && hpRatio <= userData.autoFunc.max && userData.autoFunc.cool == false) {
+            if (userData.hpTimer.use) {
+                if (hpRatio >= userData.hpTimer.min && hpRatio <= userData.hpTimer.max && userData.hpTimer.cool == false) {
                     console.log("자동기능을 사용합니다.")
-                    send(userData.autoFunc.key);
-                    userData.autoFunc.cool = true;
+                    send(userData.hpTimer.key);
+                    userData.hpTimer.cool = true;
                     setTimeout(() => {
-                        userData.autoFunc.cool = false;
-                    }, userData.autoFunc.cooltime * 1000);
+                        userData.hpTimer.cool = false;
+                    }, userData.hpTimer.cooltime * 1000);
                 }
             }
         }
