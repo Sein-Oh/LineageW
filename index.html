@@ -2,74 +2,260 @@
 <html>
 
 <head>
-    <title>LINEAGE W - 2022.09.04</title>
+    <title>LINEAGE W - 2022.9.4</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
     <style>
-        body {
-            background-color: gray;
-            font-size: 22px;
-            color: white;
+        * {
+            -webkit-user-select: none;
         }
 
-        video {
-            border: 1px solid white;
-            border-radius: 5px;
-            margin-top: 5px;
-            width: 640px;
-            height: 360px;
-        }
-
-        div.container {
-            width: 640px;
+        input {
+            width: 25px;
             text-align: center;
         }
 
-        div.container.hide {
-            display: none;
-        }
-
-        button {
-            width: 120px;
-            background-color: transparent;
-            color: white;
-            border: 1px solid white;
-            border-radius: 5px;
-            font-size: 22px;
+        .toggleSwitch {
+            width: 3rem;
+            height: 1.5rem;
+            display: block;
+            position: relative;
+            border-radius: 2rem;
+            background-color: #fff;
+            box-shadow: 0 0 1rem 3px rgba(0 0 0 / 15%);
             cursor: pointer;
         }
 
-        button.toggle {
-            color: white;
+        .toggleSwitch .toggleButton {
+            width: 1.3rem;
+            height: 1.3rem;
+            position: absolute;
+            top: 50%;
+            left: .2rem;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            background: gray;
         }
 
-        button.on {
-            color: white;
-            text-shadow:
-                0 0 7px #0fa, 0 0 10px #0fa, 0 0 21px #0fa, 0 0 32px #0fa, 0 0 52px #0fa;
+        .toggleSwitch.active {
+            background: green;
         }
 
-        button:hover {
-            box-shadow: 0 0 7px white;
+        .toggleSwitch.active .toggleButton {
+            left: calc(100% - 1.4rem);
+            background: #fff;
         }
 
-        button:active {
-            box-shadow: 0 0 7px white, 0 0 10px white;
+        .toggleSwitch,
+        .toggleButton {
+            transition: all 0.2s ease-in;
         }
     </style>
-    <script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
 </head>
 
 <body>
-    <div class="container">
-        <button id="start" class="toggle" onclick="loadFile()">CAPTURE</button>
-        <button id="connect" class="toggle" onclick="connect()">ARDUINO</button>
-        <button id="run" class="toggle" onclick="run()">RUN</button>
-        <button id="test" onclick="test()">TEST</button>
-        <button id="show" class="toggle" onclick="showDetails()">DETAILS</button>
-    </div>
-    <video id="video" autoplay></video>
-    <br>
-    <div id="info"></div>
-    <div id="details" class="container hide">
+    <fieldset style="width:350px">
+        <legend>메인</legend>
+        <div class="field-row">
+            <button id="capture" onclick="startCapture()">캡쳐</button>
+            <button id="connect" onclick="connect()">연결</button>
+            <button onclick="test()">테스트</button>
+            <button onclick="blog()">블로그 열기</button>
+        </div>
+
+        <div class="field-row">
+            <span id="hpVal" style="width:75px; padding:3px;text-align: center;">100%</span>
+            <canvas id="hpImg" width="200px" height="6px"></canvas>
+        </div>
+        <div class="field-row">
+            <span id="mpVal" style="width:75px; padding:3px; text-align: center;">100%</span>
+            <canvas id="mpImg" width="200px" height="6px"></canvas>
+        </div>
+        <div class="field-row">
+            <span onclick="toggleRun()">실행하기</span>
+            <span id="run" class="toggleSwitch" onclick="toggleRun()">
+                <span class="toggleButton"></span>
+            </span>
+        </div>
+
+    </fieldset>
+    <fieldset style="width:350px">
+        <legend>설정</legend>
+        <div class="field-row">
+            <section class="tabs">
+                <menu role="tablist" aria-label="Sample Tabs">
+                    <button role="tab" aria-selected="true" aria-controls="tab-A">자동귀환</button>
+                    <button role="tab" aria-controls="tab-B">전투대응</button>
+                    <button role="tab" aria-controls="tab-C">타이머-1</button>
+                    <button role="tab" aria-controls="tab-D">타이머-2</button>
+                    <button role="tab" aria-controls="tab-E">타이머-3</button>
+                </menu>
+                <article role="tabpanel" id="tab-A">
+                    <div class="field-row">
+                        <input type="checkbox" id="homeUse">
+                        <label for="homeUse">자동귀환 사용</label>
+                        <label>&nbsp;&nbsp;&nbsp;</label>
+                        <input type="checkbox" id="homePotionUse">
+                        <label for="homePotionUse">물약오링귀환 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="homeHpMin" type="text">
+                        <span>~</span>
+                        <input id="homeHpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="homeCool" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="homeKey" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="homeCount" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="homeCountDelay" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-B">
+                    <div class="field-row">
+                        <input type="checkbox" id="pkActionUse">
+                        <label for="pkActionUse">전투대응 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="pkActionKey" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="pkActionCount" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="pkActionCountDelay" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력대기시간:</label>
+                        <input id="pkActionInputDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="pkActionCool" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-C">
+                    <div class="field-row">
+                        <input type="checkbox" id="timer1Use">
+                        <label for="timer1Use">타이머-1 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer1HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer1HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer1MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer1MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer1Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer1Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer1CountDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer1Cool" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-D">
+                    <div class="field-row">
+                        <input type="checkbox" id="timer2Use">
+                        <label for="timer2Use">타이머-2 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer2HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer2HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer2MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer2MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer2Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer2Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer2CountDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer2Cool" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-E">
+                    <div class="field-row">
+                        <input type="checkbox" id="timer3Use">
+                        <label for="timer3Use">타이머-3 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer3HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer3HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer3MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer3MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer3Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer3Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer3CountDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer3Cool" type="text">
+                    </div>
+                </article>
+            </section>
+        </div>
+    </fieldset>
+    <fieldset style="width:350px">
+        <legend>후원관련</legend>
+        <div class="field-row">
+            <img id="donation" style="display:inline-block">
+            <div>
+                <span style="color:red;">이 앱은 무료로 사용할 수 있습니다.</span><br>
+                <span>개발의욕을 향상시키기 위해 후원할 수 있으며,</span>
+                <span>왼쪽 QR코드를 휴대폰 카메라로 찍으면 카카오페이를 이용해 후원할 수 있습니다.</span>
+            </div>
+        </div>
+    </fieldset>
+    <div id="details" style="display:none">
+        <video id="video" autoplay></video>
         <canvas id="hpImg"></canvas>
         <canvas id="hpImgRed"></canvas>
         <canvas id="hpImgBlur"></canvas>
@@ -78,83 +264,161 @@
         <canvas id="mpImgBlue"></canvas>
     </div>
 </body>
-<script defer>
+
+<script>
     let port, writer, potionTarget, pkTarget;
     let running = false;
-    let potionEmpty = false;
-    let onPk = false;
     let cvLoad = false;
     const encoder = new TextEncoder();
     const video = document.querySelector("#video");
     const canvas = document.createElement("canvas");
+    const canvasFull = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
+    const ctxFull = canvasFull.getContext("2d");
+
+    const donationImg = document.querySelector("#donation");
+    donationImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABaCAYAAABOkvOJAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAAEZ0FNQQAAsY8L/GEFAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAlZ0lEQVR4Xu2dd5xVxdnHn122sHQUFBBBxaiIoqgRe43dGBPBEsWILUaNJdYkptiTKIm9EBMNQjQxGDEaG7EgaiygsSEW7IBU6W3Z8z7f557n7ty55969i77vmz/88ZnP3SlnzpyZp8+cQ1WikK/wX4Pq9Pcr/JfgqwX5L0OByPrTn/4kP/nJT6RTp07SGklWVVUl8+bNk/vvv18GDx4s7777ruyyyy7StWtXq589e7ZMmzbN+h06dKhMmjRJ6urqZPXq1bLWWmvJ888/b+022GADWbVqlZx77rly9tlnyyOPPCJHH320bLLJJvLss89am+9+97vy2GOPyRVXXCEnnXSSlZXCpZdeKrfccov06NHD7hli//33l9dff1323HNPufPOO9PSbNxzzz1y6qmnyrbbbisPP/xwWprDL3/5S/njH/8o7du3b9Wcgc8//1wmT54svXr1SksULIjjqquuosc1Tv/617+sH33QojrHxhtvXLLO8+edd57lR40aVdRmxx13tPzvfve7tKQ0zjrrLGtbU1OTljSjY8eOVrf11lunJaUxcuRIa8s1MY4//nirW9P04Ycfpj3lUCCydOD2+/Wvf12amppk1qxZZROU39jYKN27d7frqqtz3flvCNrAFTfffLNRRthPDB/HEUccYfeYMmWK1NbWGqW/8MILVvfTn/5U1l13Xes3K1EHdwDuG+P999+3cVx22WXG4Ztttllak+P4bt26WT8dOnSQl19+WZYuXWrXxGBcYPjw4bJy5cqC58pKc+bMkQULFtg1gHsVIF0YA1RH0U477ZSWVAYduF33xBNPWP7NN98soIIwTZ061dpkwdtcfPHFaUkzwj5am9q1a5f2UgydbGvTuXPntKT4XieccEJaU4zvf//71ua0005LSyqD9/3RRx+lJTnkSDEC3OFAp3z22WfSpk2btER70f7gjNtvvz0tqRwXXHCBUR7Ufskll6Slhfj73/9unLFixQq7L9RZCnDzGWecYVw1bNgwGxfcs8UWWxiHPPXUU2nLQlx00UVGsTNnzrS8cyUYMWKEjRHdgr5y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";
     const potionEmptyImg = new Image();
     const pkImg = new Image();
 
-    const userData = {
-        "capture": {
-            "hpPos": { "x": 92, "y": 32, "w": 184, "h": 7 },
-            "mpPos": { "x": 92, "y": 46, "w": 184, "h": 7 }
-        },
+    let userData = {
+        "capHpX": 90,
+        "capHpY": 32,
+        "capHpW": 190,
+        "capHpH": 6,
+        "capMpX": 90,
+        "capMpY": 45,
+        "capMpW": 190,
+        "capMpH": 6,
 
-        "autoHome": {
-            "use": false,
-            "min": 5,
-            "max": 40,
-            "key": "8",
-            "keyCount": 4,
-            "keyDelay": 0.5
-        },
+        "homeUse": false,
+        "homeHpMin": 0,
+        "homeHpMax": 40,
+        "homeKey": "8",
+        "homeCount": 2,
+        "homeCountDelay": 1,
+        "homeCool": 0,
+        "homePotionUse": false,
+        "homePotionThres": 1000000,
+        "homePotionPosX": 472,
+        "homePotionPosY": 635,
+        "homePotionPosW": 13,
+        "homePotionPosH": 13,
 
-        "autoHeal": {
-            "use": false,
-            "min": 45,
-            "max": 70,
-            "mp": 30,
-            "key": "4",
-            "cooltime": 5,
-            "cool":false
-        },
+        "pkActionUse": false,
+        "pkActionThres": 1000000,
+        "pkActionPosX": 1057,
+        "pkActionPosY": 533,
+        "pkActionPosW": 25,
+        "pkActionPosH": 25,
+        "pkActionKey": "7",
+        "pkActionCount": 2,
+        "pkActionCountDelay": 0.5,
+        "pkActionCool": 5,
+        "pkActionInputDelay": 0,
 
-        "potionHome": {
-            "use": false,
-            "key": "8",
-            "keyCount": 4,
-            "keyDelay": 0.5,
-            "x": 472,
-            "y": 635,
-            "w": 13,
-            "h": 13,
-            "thres": 1000000
-        },
+        "timer1Use": false,
+        "timer1HpMin": 40,
+        "timer1HpMax": 60,
+        "timer1MpMin": 0,
+        "timer1MpMax": 100,
+        "timer1Key": "7",
+        "timer1Count": 1,
+        "timer1CountDelay": 0.5,
+        "timer1Cool": 5,
 
-        "pkAction": {
-            "use": false,
-            "key": "7",
-            "x": 1057,
-            "y": 533,
-            "w": 25,
-            "h": 25,
-            "thres": 1000000
-        },
+        "timer2Use": false,
+        "timer2HpMin": 60,
+        "timer2HpMax": 80,
+        "timer2MpMin": 30,
+        "timer2MpMax": 100,
+        "timer2Key": "4",
+        "timer2Count": 1,
+        "timer2CountDelay": 0.5,
+        "timer2Cool": 5,
 
-        "hpTimer": {
-            "use": false,
-            "key": "1",
-            "min": 25,
-            "max": 40,
-            "cooltime": 1,
-            "cool": false
-        }
+        "timer3Use": false,
+        "timer3HpMin": 0,
+        "timer3HpMax": 40,
+        "timer3MpMin": 0,
+        "timer3MpMax": 100,
+        "timer3Key": "1",
+        "timer3Count": 1,
+        "timer3CountDelay": 0.5,
+        "timer3Cool": 1
     }
 
-    const showDetails = () => {
-        if (document.querySelector("#details").classList.value.includes("hide")) {
-            document.querySelector("#details").classList.remove("hide");
-            document.querySelector("#show").classList.add("on");
-        } else {
-            document.querySelector("#details").classList.add("hide");
-            document.querySelector("#show").classList.remove("on");
+    if (localStorage.getItem("userData") == null) {
+        console.log("웹스토리지에 자료가 없습니다. 현재 데이터를 저장합니다.");
+        localStorage.setItem("userData", JSON.stringify(userData));
+    } else {
+        console.log("웹스토리지의 데이터를 불러옵니다.");
+        userData = JSON.parse(localStorage.getItem("userData"));
+    }
+
+    const inCool = {
+        "home": false,
+        "pkAction": false,
+        "timer1": false,
+        "timer2": false,
+        "timer3": false,
+    }
+
+    document.querySelectorAll("input").forEach(ele => {
+        ele.addEventListener("change", () => {
+            if (ele.id.includes("Use")) {
+                userData[ele.id] = ele.checked;
+            } else if (ele.id.includes("Key")) {
+                userData[ele.id] = ele.value;
+            } else if (ele.id.includes("Delay")) {
+                userData[ele.id] = parseFloat(ele.value);
+            } else {
+                userData[ele.id] = parseInt(ele.value);
+            }
+            console.log(`${ele.id}값이 ${userData[ele.id]}으로 변경되었습니다.`);
+            localStorage.setItem("userData", JSON.stringify(userData));
+        });
+    });
+
+    const test = () => {
+        console.log("입력 테스트를 진행합니다.");
+        console.log("3초 후, 1초 간격으로 i키을 4회 누릅니다.");
+        for (i = 3; i < 7; i++) {
+            setTimeout(() => send('i'), i * 1000);
+        }
+        setTimeout(() => alert("입력 테스트가 종료되었습니다."), 7000);
+    }
+
+    const updateData = () => {
+        Object.keys(userData).forEach(data => {
+            if (data.includes("Use")) {
+                document.getElementById(data).checked = userData[data];
+            } else if (data.includes("cap") || data.includes("Pos")) {
+                //Nothing
+            }
+            else if (data.includes("Thres")) {
+                //Nothing
+            } else {
+                document.getElementById(data).value = userData[data];
+            }
+        });
+    }
+    updateData();
+
+    const blog = () => {
+        window.open("https://mandloh.tistory.com/136");
+    }
+
+    const toggleRun = () => {
+        const ele = document.querySelector(".toggleSwitch");
+        running = !running;
+        if (running) {
+            ele.classList.add("active");
+            console.log("앱을 실행합니다.");
+        }
+        else {
+            ele.classList.remove("active");
+            console.log("앱이 중지되었습니다.");
         }
     }
 
@@ -168,7 +432,7 @@
             pkTarget = cv.imread(pkImg);
         }, 1000);
     }
-    
+
     const startCapture = async () => {
         if (cvLoad) {
             video.srcObject = await navigator.mediaDevices.getDisplayMedia({
@@ -188,44 +452,6 @@
         video.srcObject = null;
     }
 
-    const loadFile = () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.onchange = evt => {
-            const selectedFile = evt.target.files[0];
-            processJSON(selectedFile);
-        };
-        input.click();
-    }
-
-    const processJSON = file => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const data = JSON.parse(reader.result);
-                Object.keys(data).forEach(mainKey => {
-                    if (mainKey == "capture") {
-                        Object.keys(data[mainKey]).forEach(key => {
-                            Object.keys(data[mainKey][key]).forEach(k => {
-                                userData[mainKey][key][k] = data[mainKey][key][k];
-                            });
-                        });
-                    } else {
-                        Object.keys(data[mainKey]).forEach(key => {
-                            userData[mainKey][key] = data[mainKey][key];
-                        });
-                    }
-                });
-                startCapture();
-                document.querySelector("#start").classList.add("on");
-            } catch (error) {
-                alert("파일 불러오기에 실패했습니다.");
-                document.querySelector("#start").classList.remove("on");
-            }
-        }
-        reader.readAsText(file);
-    }
-
     const connect = async () => {
         try {
             port = await navigator.serial.requestPort();
@@ -233,11 +459,8 @@
             reader = port.readable.getReader();
             writer = port.writable.getWriter();
             console.log("아두이노가 연결되었습니다.");
-            document.querySelector("#connect").classList.add("on");
-
         } catch (err) {
             console.error("에러: " + err);
-            document.querySelector("#connect").classList.remove("on");
         }
     }
 
@@ -245,23 +468,6 @@
         console.log("Send: " + data);
         const dataArrayBuffer = encoder.encode(data);
         writer.write(dataArrayBuffer);
-    }
-
-    const test = () => {
-        for (i = 0; i < 5; i++) {
-            setTimeout(() => send('i'), i * 1000);
-        }
-    }
-
-    const run = () => {
-        //ON되어있는 상태
-        if (document.querySelector("#run").classList.value.includes("on")) {
-            running = false;
-            document.querySelector("#run").classList.remove("on");
-        } else {
-            running = true;
-            document.querySelector("#run").classList.add("on");
-        }
     }
 
     const captureLoop = () => {
@@ -272,46 +478,10 @@
         canvasFull.height = video.videoHeight;
         ctxFull.drawImage(video, 0, 0, canvasFull.width, canvasFull.height, 0, 0, 1280, 720);
 
-        //1280x720 이미지에서 물약이미지 잘라오기
-        canvas.width = userData.potionHome.w;
-        canvas.height = userData.potionHome.h;
-        ctx.drawImage(canvasFull, userData.potionHome.x, userData.potionHome.y, userData.potionHome.w, userData.potionHome.h, 0, 0, userData.potionHome.w, userData.potionHome.h);
-        const potionImg = cv.imread(canvas);
-
-        //물약 이미지 매칭
-        const potionResult = new cv.Mat();
-        const potionMask = new cv.Mat();
-        cv.matchTemplate(potionTarget, potionImg, potionResult, cv.TM_CCOEFF, potionMask);
-        const potionRoc = cv.minMaxLoc(potionResult, potionMask);
-        if (Math.round(potionRoc.maxVal) >= userData.potionHome.thres) {
-            console.log("물약이 없습니다.");
-            potionEmpty = true;
-        } else {
-            potionEmpty = false;
-        }
-
-        //1280x720 이미지에서 PK 부분 잘라오기
-        canvas.width = userData.pkAction.w;
-        canvas.height = userData.pkAction.h;
-        ctx.drawImage(canvasFull, userData.pkAction.x, userData.pkAction.y, userData.pkAction.w, userData.pkAction.h, 0, 0, userData.pkAction.w, userData.pkAction.h);
-        const pkImg = cv.imread(canvas);
-
-        //PK 이미지 매칭
-        const pkResult = new cv.Mat();
-        const pkMask = new cv.Mat();
-        cv.matchTemplate(pkTarget, pkImg, pkResult, cv.TM_CCOEFF, pkMask);
-        const pkRoc = cv.minMaxLoc(pkResult, pkMask);
-        if (Math.round(pkRoc.maxVal) >= userData.pkAction.thres) {
-            console.log("전투상태입니다.");
-            onPk = true;
-        } else {
-            onPk = false;
-        }
-
         //1280x720 이미지에서 HP 부분 잘라오기
-        canvas.width = userData.capture.hpPos.w;
-        canvas.height = userData.capture.hpPos.h;
-        ctx.drawImage(canvasFull, userData.capture.hpPos.x, userData.capture.hpPos.y, userData.capture.hpPos.w, userData.capture.hpPos.h, 0, 0, userData.capture.hpPos.w, userData.capture.hpPos.h);
+        canvas.width = userData.capHpW;
+        canvas.height = userData.capHpH;
+        ctx.drawImage(canvasFull, userData.capHpX, userData.capHpY, userData.capHpW, userData.capHpH, 0, 0, userData.capHpW, userData.capHpH);
         const hpImg = cv.imread(canvas);
         cv.imshow("hpImg", hpImg);
 
@@ -359,9 +529,9 @@
         const hpRatio = hpRatio_ == 0 ? 100 : hpRatio_;
 
         //1280x720 이미지에서 MP 부분 잘라오기
-        canvas.width = userData.capture.mpPos.w;
-        canvas.height = userData.capture.mpPos.h;
-        ctx.drawImage(canvasFull, userData.capture.mpPos.x, userData.capture.mpPos.y, userData.capture.mpPos.w, userData.capture.mpPos.h, 0, 0, userData.capture.mpPos.w, userData.capture.mpPos.h);
+        canvas.width = userData.capMpW;
+        canvas.height = userData.capMpH;
+        ctx.drawImage(canvasFull, userData.capMpX, userData.capMpY, userData.capMpW, userData.capMpH, 0, 0, userData.capMpW, userData.capMpH);
         const mpImg = cv.imread(canvas);
 
         //MP Blue 값만 추출하기
@@ -394,78 +564,153 @@
         const mpMinIdx = Math.min.apply(null, mpMaxAry) < 0 ? 0 : Math.min.apply(null, mpMaxAry);
         const mpRatio = Math.round((mpBlue.size().width - mpMinIdx) / mpBlue.size().width * 100);
 
-        document.querySelector("#info").innerHTML = `[HP]${hpRatio}% / [MP]${mpRatio}%`;
+        document.querySelector("#hpVal").innerHTML = `${hpRatio}%`;
+        document.querySelector("#mpVal").innerHTML = `${mpRatio}%`;
         cv.imshow("mpImg", mpImg);
 
         // 각종 기능 제어하기
         if (running) {
             // Auto home
-            if (userData.autoHome.use) {
-                if (hpRatio >= userData.autoHome.min && hpRatio <= userData.autoHome.max) {
-                    for (i = 0; i < userData.autoHome.keyCount; i++) {
+            if (userData.homeUse && !inCool.home) {
+                if (hpRatio >= userData.homeHpMin && hpRatio <= userData.homeHpMax) {
+                    console.log("자동귀환이 실행되었습니다.");
+                    for (let i = 0; i < userData.homeCount; i++) {
                         setTimeout(() => {
-                            console.log("자동귀환이 실행되었습니다.");
-                            send(userData.autoHome.key);
-                        }, userData.autoHome.keyDelay * i * 1000);
+                            send(userData.homeKey);
+                        }, userData.homeCountDelay * i * 1000);
                     }
-                    running = false;
-                    document.querySelector("#run").classList.remove("on");
+                    if (userData.homeCool > 0) {
+                        inCool.home = true;
+                        console.log(`${userData.homeCool}초간 자동귀환 쿨타임이 적용됩니다.`);
+                        setTimeout(() => {
+                            inCool.home = false;
+                            console.log("자동귀환 쿨타임이 해제되었습니다.");
+                        }, userData.homeCool * 1000);
+                    } else {
+                        console.log("무한반복 귀환을 방지하기 위해 대기상태로 전환합니다.");
+                        toggleRun();
+                    }
                 }
             }
 
-            // Auto heal
-            if (userData.autoHeal.use) {
-                if (hpRatio >= userData.autoHeal.min && hpRatio <= userData.autoHeal.max && mpRatio >= userData.autoHeal.mp && userData.autoHeal.cool == false) {
-                    console.log("힐을 사용합니다.");
-                    send(userData.autoHeal.key);
-                    userData.autoHeal.cool = true;
-                    setTimeout(() => {
-                        console.log("힐 쿨타임이 초기화되었습니다.")
-                        userData.autoHeal.cool = false;
-                    }, userData.autoHeal.cooltime * 1000);
-                }
-            }
 
             // Potion home
-            if (userData.potionHome.use) {
-                if (potionEmpty) {
-                    for (i = 0; i < userData.potionHome.keyCount; i++) {
+            if (userData.homePotionUse) {
+                //1280x720 이미지에서 물약이미지 잘라오기
+                canvas.width = userData.homePotionPosW;
+                canvas.height = userData.homePotionPosH;
+                ctx.drawImage(canvasFull, userData.homePotionPosX, userData.homePotionPosY, userData.homePotionPosW, userData.homePotionPosH, 0, 0, userData.homePotionPosW, userData.homePotionPosH);
+                const potionImg = cv.imread(canvas);
+
+                //물약 이미지 매칭
+                const potionResult = new cv.Mat();
+                const potionMask = new cv.Mat();
+                cv.matchTemplate(potionTarget, potionImg, potionResult, cv.TM_CCOEFF, potionMask);
+                const potionRoc = cv.minMaxLoc(potionResult, potionMask);
+                if (Math.round(potionRoc.maxVal) >= userData.homePotionThres) {
+                    console.log("물약이 없습니다. 귀환합니다.");
+                    for (let i = 0; i < userData.homeCount; i++) {
                         setTimeout(() => {
-                            console.log("물약이 없어 귀환했습니다.");
-                            send(userData.potionHome.key);
-                        }, userData.potionHome.keyDelay * i * 1000);
+                            send(userData.homeKey);
+                        }, userData.homeCountDelay * i * 1000);
                     }
-                    running = false;
-                    document.querySelector("#run").classList.remove("on");
+                    toggleRun();
+                    console.log("대기상태로 전환합니다.");
                 }
+                potionImg.delete();
+                potionResult.delete();
+                potionMask.delete();
             }
 
             // PK action
-            if (userData.pkAction.use) {
-                if (onPk) {
+            if (userData.pkActionUse && !inCool.pkAction) {
+                //1280x720 이미지에서 PK 부분 잘라오기
+                canvas.width = userData.pkActionPosW;
+                canvas.height = userData.pkActionPosH;
+                ctx.drawImage(canvasFull, userData.pkActionPosX, userData.pkActionPosY, userData.pkActionPosW, userData.pkActionPosH, 0, 0, userData.pkActionPosW, userData.pkActionPosH);
+                const pkImg = cv.imread(canvas);
+
+                //PK 이미지 매칭
+                const pkResult = new cv.Mat();
+                const pkMask = new cv.Mat();
+                cv.matchTemplate(pkTarget, pkImg, pkResult, cv.TM_CCOEFF, pkMask);
+                const pkRoc = cv.minMaxLoc(pkResult, pkMask);
+                if (Math.round(pkRoc.maxVal) >= userData.pkActionThres) {
                     console.log("전투상황에 대응했습니다.");
-                    send(userData.pkAction.key);
+                    //입력대기 적용
+                    setTimeout(() => {
+                        for (let i = 0; i < userData.pkActionCount; i++) {
+                            setTimeout(() => {
+                                send(userData.pkActionKey);
+                            }, userData.pkActionCountDelay * i * 1000);
+                        }
+                    }, userData.pkActionInputDelay * 1000);
+                    inCool.pkAction = true;
+                    console.log(`${userData.pkActionCool}초간 전투대응 쿨타임이 적용됩니다.`);
+                    setTimeout(() => {
+                        inCool.pkAction = false;
+                        console.log("전투대응 쿨타임이 해제되었습니다.");
+                    }, userData.pkActionCool * 1000);
+                }
+                pkImg.delete();
+                pkResult.delete();
+                pkMask.delete();
+            }
+
+            // timer1
+            if (userData.timer1Use && !inCool.timer1) {
+                if (hpRatio >= userData.timer1HpMin && hpRatio <= userData.timer1HpMax && mpRatio >= userData.timer1MpMin && mpRatio <= userData.timer1MpMax) {
+                    console.log("타이머-1 기능을 사용합니다.");
+                    for (let i = 0; i < userData.timer1Count; i++) {
+                        setTimeout(() => {
+                            send(userData.timer1Key);
+                        }, userData.timer1CountDelay * i * 1000);
+                    }
+                    inCool.timer1 = true;
+                    console.log(`${userData.timer1Cool}초간 타이머-1 쿨타임이 적용됩니다.`);
+                    setTimeout(() => {
+                        inCool.timer1 = false;
+                        console.log("타이머-1 쿨타임이 해제되었습니다.");
+                    }, userData.timer1Cool * 1000);
                 }
             }
 
-            // Auto function
-            if (userData.hpTimer.use) {
-                if (hpRatio >= userData.hpTimer.min && hpRatio <= userData.hpTimer.max && userData.hpTimer.cool == false) {
-                    console.log("자동기능을 사용합니다.")
-                    send(userData.hpTimer.key);
-                    userData.hpTimer.cool = true;
+            // timer2
+            if (userData.timer2Use && !inCool.timer2) {
+                if (hpRatio >= userData.timer2HpMin && hpRatio <= userData.timer2HpMax && mpRatio >= userData.timer2MpMin && mpRatio <= userData.timer2MpMax) {
+                    console.log("타이머-2 기능을 사용합니다.");
+                    for (let i = 0; i < userData.timer2Count; i++) {
+                        setTimeout(() => {
+                            send(userData.timer2Key);
+                        }, userData.timer2CountDelay * i * 1000);
+                    }
+                    inCool.timer2 = true;
+                    console.log(`${userData.timer2Cool}초간 타이머-2 쿨타임이 적용됩니다.`);
                     setTimeout(() => {
-                        userData.hpTimer.cool = false;
-                    }, userData.hpTimer.cooltime * 1000);
+                        inCool.timer2 = false;
+                        console.log("타이머-2 쿨타임이 해제되었습니다.");
+                    }, userData.timer2Cool * 1000);
+                }
+            }
+
+            // timer3
+            if (userData.timer3Use && !inCool.timer3) {
+                if (hpRatio >= userData.timer3HpMin && hpRatio <= userData.timer3HpMax && mpRatio >= userData.timer3MpMin && mpRatio <= userData.timer3MpMax) {
+                    console.log("타이머-3 기능을 사용합니다.");
+                    for (let i = 0; i < userData.timer3Count; i++) {
+                        setTimeout(() => {
+                            send(userData.timer3Key);
+                        }, userData.timer3CountDelay * i * 1000);
+                    }
+                    inCool.timer3 = true;
+                    console.log(`${userData.timer3Cool}초간 타이머-3 쿨타임이 적용됩니다.`);
+                    setTimeout(() => {
+                        inCool.timer3 = false;
+                        console.log("타이머-3 쿨타임이 해제되었습니다.");
+                    }, userData.timer3Cool * 1000);
                 }
             }
         }
-        potionImg.delete();
-        potionResult.delete();
-        potionMask.delete();
-        pkImg.delete();
-        pkResult.delete();
-        pkMask.delete();
         hpImg.delete();
         hpImgPlanes.delete();
         hpRed.delete();
@@ -478,9 +723,25 @@
         setTimeout(captureLoop, 300);
     }
 
-    alert("2022.08.22 업데이트.\n블로그 글을 참고해 주세요.\nhttps://mandloh.tistory.com/135");
-
-
+    const tabButtons = document.querySelectorAll("[role=tab]");
+    tabButtons.forEach((tabButton) => {
+        tabButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            const tabContainer = e.target.parentElement.parentElement;
+            const targetId = e.target.getAttribute("aria-controls");
+            tabButtons.forEach((_tabButton) =>
+                _tabButton.setAttribute("aria-selected", false)
+            );
+            tabButton.setAttribute("aria-selected", true);
+            tabContainer
+                .querySelectorAll("[role=tabpanel]")
+                .forEach((tabPanel) => tabPanel.setAttribute("hidden", true));
+            tabContainer
+                .querySelector(`[role=tabpanel]#${targetId}`)
+                .removeAttribute("hidden");
+        });
+    });
 </script>
+<script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
 
 </html>
