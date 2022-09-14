@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>LINEAGE W - 2022.9.4</title>
+    <title>LINEAGE W - 2022.9.14</title>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="https://unpkg.com/xp.css" />
     <style>
@@ -248,9 +248,8 @@
         <div class="field-row">
             <img id="donation" style="display:inline-block">
             <div>
-                <span style="color:red;">이 앱은 무료로 사용할 수 있습니다.</span><br>
-                <span>개발의욕을 향상시키기 위해 후원할 수 있으며,</span>
-                <span>왼쪽 QR코드를 휴대폰 카메라로 찍으면 카카오페이를 이용해 후원할 수 있습니다.</span>
+                <span>지속적인 유지관리를 위해 후원할 수 있습니다.</span>
+                <span>왼쪽 QR코드를 휴대폰 카메라로 찍으면 카카오페이로 이동합니다.</span>
             </div>
         </div>
     </fieldset>
@@ -267,6 +266,8 @@
 
 <script>
     let port, writer, potionTarget, pkTarget;
+    let teleToken, teleId;
+    let teleConnect = false;
     let running = false;
     let cvLoad = false;
     const encoder = new TextEncoder();
@@ -348,12 +349,60 @@
         "timer3Cool": 1
     }
 
+    const teleGet = () => {
+        fetch(`https://api.telegram.org/bot${teleToken}/getUpdates`).then(res => {
+            res.json().then(data => {
+                teleId = data.result[0].message.chat.id;
+                console.log("텔레그램과 연결되었습니다.");
+                teleSend("텔레그램과 연결되었습니다");
+                teleConnect = true;
+            }).catch(err => {
+                console.log("텔레그램에 연결에 실패했습니다.");
+            });
+        });
+    }
+
+    const makeFile = (canvasEle) => {
+        const blobBin = atob(canvasEle.toDataURL().split(",")[1]);
+        const array = [];
+        for (let i = 0; i < blobBin.length; i++) {
+            array.push(blobBin.charCodeAt(i));
+        }
+        const file = new Blob([new Uint8Array(array)], { type: "image/png" });
+        return file;
+    }
+
+    const teleSendPhoto = (canvasEle, caption) => {
+        const url = `https://api.telegram.org/bot${teleToken}/sendphoto?chat_id=${teleId}`
+        const file = makeFile(canvasEle);
+        const teleData = new FormData();
+        teleData.append("photo", file);
+        teleData.append("caption", caption);
+        fetch(url, {
+            method: "POST",
+            body: teleData
+        });
+    }
+
+    const teleSend = (msg) => {
+        const url = `https://api.telegram.org/bot${teleToken}/sendMessage?chat_id=935941732&text=${msg}`;
+        fetch(url);
+    }
+
     if (localStorage.getItem("userData") == null) {
         console.log("웹스토리지에 자료가 없습니다. 현재 데이터를 저장합니다.");
         localStorage.setItem("userData", JSON.stringify(userData));
     } else {
         console.log("웹스토리지의 데이터를 불러옵니다.");
         userData = JSON.parse(localStorage.getItem("userData"));
+    }
+
+    if (localStorage.getItem("telegram") == null) {
+        console.log("웹스토리지에 텔레그램 토큰이 없습니다.");
+    } else {
+        console.log("웹스토리지에서 텔레그램 토큰을 불러옵니다.");
+        teleToken = localStorage.getItem("telegram");
+        teleGet();
     }
 
     const inCool = {
@@ -470,10 +519,9 @@
         writer.write(dataArrayBuffer);
     }
 
+
     const captureLoop = () => {
         //video 이미지를 1280x720으로 불러오기
-        const canvasFull = document.createElement("canvas");
-        const ctxFull = canvasFull.getContext("2d");
         canvasFull.width = video.videoWidth;
         canvasFull.height = video.videoHeight;
         ctxFull.drawImage(video, 0, 0, canvasFull.width, canvasFull.height, 0, 0, 1280, 720);
@@ -574,6 +622,7 @@
             if (userData.homeUse && !inCool.home) {
                 if (hpRatio >= userData.homeHpMin && hpRatio <= userData.homeHpMax) {
                     console.log("자동귀환이 실행되었습니다.");
+                    teleSendPhoto(canvasFull, "자동귀환");
                     for (let i = 0; i < userData.homeCount; i++) {
                         setTimeout(() => {
                             send(userData.homeKey);
@@ -609,6 +658,7 @@
                 const potionRoc = cv.minMaxLoc(potionResult, potionMask);
                 if (Math.round(potionRoc.maxVal) >= userData.homePotionThres) {
                     console.log("물약이 없습니다. 귀환합니다.");
+                    teleSendPhoto(canvasFull, "물약오링 귀환");
                     for (let i = 0; i < userData.homeCount; i++) {
                         setTimeout(() => {
                             send(userData.homeKey);
@@ -637,6 +687,7 @@
                 const pkRoc = cv.minMaxLoc(pkResult, pkMask);
                 if (Math.round(pkRoc.maxVal) >= userData.pkActionThres) {
                     console.log("전투상황에 대응했습니다.");
+                    teleSendPhoto(canvasFull, "전투대응");
                     //입력대기 적용
                     setTimeout(() => {
                         for (let i = 0; i < userData.pkActionCount; i++) {
@@ -741,6 +792,8 @@
                 .removeAttribute("hidden");
         });
     });
+
+    alert("2022.09.14(수)\n텔레그램 연동기능이 업데이트 되었습니다.\n블로그 열기 버튼으로 내용을 확인하세요");
 </script>
 <script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
 
