@@ -385,7 +385,7 @@
     }
 
     const teleSend = (msg) => {
-        const url = `https://api.telegram.org/bot${teleToken}/sendMessage?chat_id=935941732&text=${msg}`;
+        const url = `https://api.telegram.org/bot${teleToken}/sendMessage?chat_id=${teleId}&text=${msg}`;
         fetch(url);
     }
 
@@ -792,7 +792,6 @@
                 .removeAttribute("hidden");
         });
     });
-
 </script>
 <script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
 
