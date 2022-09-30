@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>LINEAGE W - 2022.9.14</title>
+    <title>LINEAGE W - 2022.9.30</title>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="https://unpkg.com/xp.css" />
     <style>
@@ -253,6 +253,14 @@
             </div>
         </div>
     </fieldset>
+    <fieldset style="width:350px">
+        <legend>공지-2022.09.30</legend>
+        <span>텔래그램 봇 서버를 이용해 쉽게 연동이 가능해졌습니다.</span>
+        <span>봇 서버의 한계가 있기 때문에 1회라도 후원해주신 분들에게만 안내하겠습니다.</span>
+        <span>아래 메일로 후원시 사용하신 이력(날짜, 후원자명)을 보내주시면 메일로 안내해 드리겠습니다.</span>
+        <br>
+        <span>sein@kakao.com</span>
+    </fieldset>
     <div id="details" style="display:none">
         <video id="video" autoplay></video>
         <canvas id="hpImg"></canvas>
@@ -397,12 +405,18 @@
         userData = JSON.parse(localStorage.getItem("userData"));
     }
 
-    if (localStorage.getItem("telegram") == null) {
+    if (localStorage.getItem("telegram") == null && localStorage.getItem("donationToken") == null) {
         console.log("웹스토리지에 텔레그램 토큰이 없습니다.");
-    } else {
+    } else if (localStorage.getItem("telegram")) {
         console.log("웹스토리지에서 텔레그램 토큰을 불러옵니다.");
         teleToken = localStorage.getItem("telegram");
         teleGet();
+    } else if (localStorage.getItem("donationToken")) {
+        console.log("후원자용 토큰을 사용합니다.");
+        teleToken = localStorage.getItem("donationToken");
+        teleId = parseInt(localStorage.getItem("donationId"));
+        teleSend("텔레그램과 연결되었습니다");
+        console.log("텔레그램과 연결되었습니다.");
     }
 
     const inCool = {
@@ -792,6 +806,7 @@
                 .removeAttribute("hidden");
         });
     });
+
 </script>
 <script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
 
