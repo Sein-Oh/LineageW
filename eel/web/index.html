@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LINEAGE W - 2022.XX.XX</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+    <style>
+        * {
+            -webkit-user-select: none;
+        }
+
+        input {
+            width: 25px;
+            text-align: center;
+        }
+
+        .toggleSwitch {
+            width: 3rem;
+            height: 1.5rem;
+            display: block;
+            position: relative;
+            border-radius: 2rem;
+            background-color: #fff;
+            box-shadow: 0 0 1rem 3px rgba(0 0 0 / 15%);
+            cursor: pointer;
+        }
+
+        .toggleSwitch .toggleButton {
+            width: 1.3rem;
+            height: 1.3rem;
+            position: absolute;
+            top: 50%;
+            left: .2rem;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            background: gray;
+        }
+
+        .toggleSwitch.active {
+            background: green;
+        }
+
+        .toggleSwitch.active .toggleButton {
+            left: calc(100% - 1.4rem);
+            background: #fff;
+        }
+
+        .toggleSwitch,
+        .toggleButton {
+            transition: all 0.1s ease-in;
+        }
+    </style>
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+
+<body>
+    <fieldset style="width:350px">
+        <legend>메인</legend>
+        <div class="field-row">
+            <button id="capture" onclick="startCapture()">캡쳐</button>
+            <button id="connect" onclick="connect()">연결</button>
+            <button onclick="test()">테스트</button>
+            <button onclick="blog()">블로그 열기</button>
+        </div>
+
+        <div class="field-row">
+            <span id="hpVal" style="width:75px; padding:3px;text-align: center;">100%</span>
+            <canvas id="hpImg" width="200px" height="6px"></canvas>
+        </div>
+        <div class="field-row">
+            <span id="mpVal" style="width:75px; padding:3px; text-align: center;">100%</span>
+            <canvas id="mpImg" width="200px" height="6px"></canvas>
+        </div>
+        <div class="field-row">
+            <span onclick="toggleRun()">실행하기</span>
+            <span id="run" class="toggleSwitch" onclick="toggleRun()">
+                <span class="toggleButton"></span>
+            </span>
+        </div>
+
+    </fieldset>
+    <fieldset style="width:350px">
+        <legend>설정</legend>
+        <div class="field-row">
+            <section class="tabs">
+                <menu role="tablist" aria-label="Sample Tabs">
+                    <button role="tab" aria-selected="true" aria-controls="tab-A">자동귀환</button>
+                    <button role="tab" aria-controls="tab-B">전투대응</button>
+                    <button role="tab" aria-controls="tab-C">타이머-1</button>
+                    <button role="tab" aria-controls="tab-D">타이머-2</button>
+                    <button role="tab" aria-controls="tab-E">타이머-3</button>
+                </menu>
+                <article role="tabpanel" id="tab-A">
+                    <div class="field-row">
+                        <input type="checkbox" id="homeUse">
+                        <label for="homeUse">자동귀환 사용</label>
+                        <label>&nbsp;&nbsp;&nbsp;</label>
+                        <input type="checkbox" id="homePotionUse">
+                        <label for="homePotionUse">물약오링귀환 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="homeHpMin" type="text">
+                        <span>~</span>
+                        <input id="homeHpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="homeCool" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="homeKey" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="homeCount" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="homeCountDelay" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-B">
+                    <div class="field-row">
+                        <input type="checkbox" id="pkActionUse">
+                        <label for="pkActionUse">전투대응 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="pkActionKey" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="pkActionCount" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="pkActionCountDelay" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력대기시간:</label>
+                        <input id="pkActionInputDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="pkActionCool" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-C">
+                    <div class="field-row">
+                        <input type="checkbox" id="timer1Use">
+                        <label for="timer1Use">타이머-1 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer1HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer1HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer1MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer1MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer1Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer1Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer1CountDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer1Cool" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-D">
+                    <div class="field-row">
+                        <input type="checkbox" id="timer2Use">
+                        <label for="timer2Use">타이머-2 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer2HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer2HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer2MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer2MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer2Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer2Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer2CountDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer2Cool" type="text">
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-E">
+                    <div class="field-row">
+                        <input type="checkbox" id="timer3Use">
+                        <label for="timer3Use">타이머-3 사용</label>
+                    </div>
+                    <hr>
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer3HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer3HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer3MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer3MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer3Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer3Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer3CountDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer3Cool" type="text">
+                    </div>
+                </article>
+            </section>
+        </div>
+    </fieldset>
+    <fieldset style="width:350px">
+        <legend>후원관련</legend>
+        <div class="field-row">
+            <img id="donation" style="display:inline-block">
+            <div>
+                <span>지속적인 유지관리를 위해 후원할 수 있습니다.</span>
+                <span>왼쪽 QR코드를 휴대폰 카메라로 찍으면 카카오페이로 이동합니다.</span>
+            </div>
+        </div>
+    </fieldset>
+    <div id="details" style="display:none">
+        <video id="video" autoplay></video>
+    </div>
+</body>
+
+<script>
+    const video = document.querySelector("#video");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const canvasHp = document.querySelector("#hpImg");
+    const ctxHp = canvasHp.getContext("2d");
+    const canvasMp = document.querySelector("#mpImg");
+    const ctxMp = canvasMp.getContext("2d");
+    let running = false;
+    let capture = false;
+    let capturePos;
+    canvas.width = 1280;
+    canvas.height = 720;
+
+    const toggleRun = () => {
+        const ele = document.querySelector(".toggleSwitch");
+        running = !running;
+        if (running) {
+            ele.classList.add("active");
+            console.log("앱을 실행합니다.");
+        }
+        else {
+            ele.classList.remove("active");
+            console.log("앱이 중지되었습니다.");
+        }
+    }
+
+    const startCapture = async () => {
+        navigator.mediaDevices.getDisplayMedia({
+            video: { cursor: "always", frameRate: { ideal: 5, max: 5 } },
+            audio: false
+        }).then(src => {
+            video.srcObject = src;
+            console.log("캡처에 성공했습니다.");
+            capture = true;
+            const hwnd = video.srcObject.getTracks()[0].label.split(":")[1];
+            eel.updateReadyState("capture", hwnd);
+            setTimeout(captureLoop, 1000);
+        }).catch(() => {
+            console.log("캡처에 실패했습니다.");
+            capture = false
+            eel.updateReadyState("capture", capture);
+        });
+    }
+
+    const stopCapture = () => {
+        const tracks = video.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+        video.srcObject = null;
+    }
+
+    eel.expose(setCapturePos);
+    function setCapturePos(data) {
+        capturePos = data;
+        console.log("캡쳐위치 데이터를 받았습니다.");
+    }
+
+    const connect = () => {
+        navigator.serial.requestPort().then(port => {
+            port.open({ baudRate: 9600 }).then(() => {
+                writer = port.writable.getWriter();
+                console.log("아두이노가 연결되었습니다.");
+                eel.updateReadyState("arduino", true);
+            });
+        }).catch(() => {
+            console.log("아두이노 연결에 실패했습니다");
+            eel.updateReadyState("arduino", false);
+        });
+    }
+
+    const send = (data) => {
+        console.log("Send: " + data);
+        const dataArrayBuffer = encoder.encode(data);
+        writer.write(dataArrayBuffer);
+    }
+
+    const blog = () => {
+        window.open("https://mandloh.tistory.com/136");
+    }
+
+    const captureLoop = () => {
+        //video 이미지를 1280x720으로 불러오기
+        ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
+        if (capture) {
+            //1280x720 이미지에서 HP 부분 잘라오기
+            canvasHp.width = capturePos.capHpW;
+            canvasHp.height = capturePos.capHpH;
+            ctxHp.drawImage(canvas, capturePos.capHpX, capturePos.capHpY, capturePos.capHpW, capturePos.capHpH, 0, 0, capturePos.capHpW, capturePos.capHpH);
+            
+            //1280x720 이미지에서 MP 부분 잘라오기
+            canvasMp.width = capturePos.capMpW;
+            canvasMp.height = capturePos.capMpH;
+            ctxMp.drawImage(canvas, capturePos.capMpX, capturePos.capMpY, capturePos.capMpW, capturePos.capMpH, 0, 0, capturePos.capMpW, capturePos.capMpH);
+        }
+        setTimeout(captureLoop, 200);
+    }
+
+    eel.expose(sendImages);
+    function sendImages() {
+        return canvas.toDataURL("image/webp");
+    }
+
+    const tabButtons = document.querySelectorAll("[role=tab]");
+    tabButtons.forEach((tabButton) => {
+        tabButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            const tabContainer = e.target.parentElement.parentElement;
+            const targetId = e.target.getAttribute("aria-controls");
+            tabButtons.forEach((_tabButton) =>
+                _tabButton.setAttribute("aria-selected", false)
+            );
+            tabButton.setAttribute("aria-selected", true);
+            tabContainer
+                .querySelectorAll("[role=tabpanel]")
+                .forEach((tabPanel) => tabPanel.setAttribute("hidden", true));
+            tabContainer
+                .querySelector(`[role=tabpanel]#${targetId}`)
+                .removeAttribute("hidden");
+        });
+    });
+</script>
+
+</html>
