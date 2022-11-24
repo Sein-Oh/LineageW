@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lineage W GUI</title>
+    <script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+    <style>
+        input {
+            width: 25px;
+            text-align: center;
+        }
+
+        .noUi-handle {
+            box-shadow: none;
+        }
+
+        .noUi-handle .noUi-touch-area {
+            border: 1px solid transparent;
+            border-radius: 20px;
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            width: auto;
+            height: auto;
+        }
+
+        .noUi-handle::before,
+        .noUi-handle::after {
+            display: none;
+        }
+
+        .noUi-handle:hover .noUi-touch-area {
+            border: 1px solid gray;
+        }
+
+        .noUi-target {
+            height: 10px;
+            width: 165px;
+        }
+
+        .toggle {
+            width: 30px;
+            background: gray;
+        }
+
+        .noUi-target .noUi-handle {
+            height: 18px;
+            width: 18px;
+            top: -5px;
+            right: -9px;
+            /* half the width */
+            border-radius: 9px;
+        }
+
+        .blue .noUi-connect {
+            background: rgb(100, 158, 175);
+        }
+
+        .red .noUi-connect {
+            background: rgb(236, 91, 60);
+        }
+
+        .green .noUi-connect {
+            background: rgb(76, 202, 97);
+        }
+
+        .field-row {
+            margin: 10px 5px 10px 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <fieldset style="width:360px">
+        <legend>메인</legend>
+        <div class="field-row">
+            <button id="capture">캡쳐</button>
+            <button id="connect">연결</button>
+        </div>
+        <div class="field-row">
+            <label>중지</label>
+            <label>&nbsp;</label>
+            <div id="toggle" class="toggle green"></div>
+            <label>&nbsp;</label>
+            <label>실행</label>
+        </div>
+    </fieldset>
+
+    <fieldset style="width:360px">
+        <legend>스마트슬롯 설정</legend>
+        <div class="field-row">
+            <section class="tabs">
+                <menu role="tablist" aria-label="Sample Tabs">
+                    <button role="tab" aria-selected="true" aria-controls="tab-A">1번</button>
+                    <button role="tab" aria-controls="tab-B">2번</button>
+                    <button role="tab" aria-controls="tab-C">3번</button>
+                    <button role="tab" aria-controls="tab-D">4번</button>
+                    <button role="tab" aria-controls="tab-E">5번</button>
+                    <button role="tab" aria-controls="tab-F">6번</button>
+                    <button role="tab" aria-controls="tab-G">7번</button>
+                    <button role="tab" aria-controls="tab-H">8번</button>
+                </menu>
+                <article role="tabpanel" id="tab-A">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key1" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count1" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay1" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool1" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider1" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider1Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider1" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider1Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish1">
+                        <label for="finish1">사용 후 중지</label>
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-B">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key2" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count2" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay2" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool2" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider2" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider2Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider2" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider2Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish2">
+                        <label for="finish2">사용 후 중지</label>
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-C">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key3" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count3" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay3" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool3" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider3" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider3Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider3" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider3Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish3">
+                        <label for="finish3">사용 후 중지</label>
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-D">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key4" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count4" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay4" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool4" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider4" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider4Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider4" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider4Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish4">
+                        <label for="finish4">사용 후 중지</label>
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-E">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key5" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count5" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay5" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool5" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider5" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider5Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider5" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider5Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish5">
+                        <label for="finish5">사용 후 중지</label>
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-F">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key6" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count6" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay6" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool6" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider6" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider6Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider6" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider6Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish6">
+                        <label for="finish6">사용 후 중지</label>
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-G">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key7" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count7" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay7" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool7" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider7" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider7Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider7" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider7Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish7">
+                        <label for="finish7">사용 후 중지</label>
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-H">
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="key8" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="count8" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="delay8" type="text">
+                        <label>&nbsp;</label>
+                        <label>쿨타임:</label>
+                        <input id="cool8" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(HP)</label>
+                        <label>&nbsp;</label>
+                        <div id="hpSlider8" class="red" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="hpSlider8Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <label style="width:65px">사용구간(MP)</label>
+                        <label>&nbsp;</label>
+                        <div id="mpSlider8" class="blue" style="display:inline-block"></div>
+                        <label>&nbsp;</label>
+                        <label id="mpSlider8Info" style="width:40px"></label>
+                    </div>
+                    <div class="field-row">
+                        <input type="checkbox" id="finish8">
+                        <label for="finish8">사용 후 중지</label>
+                    </div>
+                </article>
+
+
+            </section>
+        </div>
+    </fieldset>
+
+</body>
+<script>
+    const makeSlider = ele => {
+        noUiSlider.create(ele, {
+            start: [20, 80],
+            connect: true,
+            range: { 'min': 0, 'max': 100 },
+            step: 1
+        });
+        ele.noUiSlider.on("update", values => {
+            document.querySelector(`#${ele.id}Info`).innerHTML = `${Math.round(values[0])}-${Math.round(values[1])}%`;
+        });
+    }
+
+    const makeToggle = ele => {
+        noUiSlider.create(ele, {
+            start: 0,
+            range: { 'min': 0, 'max': 1 },
+            connect: [true, false],
+            step: 1
+        });
+        ele.noUiSlider.on("start", value => {
+            value == "0.00" ? toggle.noUiSlider.set(1) : toggle.noUiSlider.set(0);
+        });
+    }
+   
+    for (let i=1; i<=8; i++) {
+        const script = `
+            const hpSlider${i} = document.querySelector('#hpSlider${i}');
+            const mpSlider${i} = document.querySelector('#mpSlider${i}');
+            makeSlider(hpSlider${i});
+            makeSlider(mpSlider${i});
+        `;
+        eval(script);
+    }
+
+    const toggle = document.querySelector("#toggle");
+    makeToggle(toggle);
+
+
+
+    const tabButtons = document.querySelectorAll("[role=tab]");
+    tabButtons.forEach((tabButton) => {
+        tabButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            const tabContainer = e.target.parentElement.parentElement;
+            const targetId = e.target.getAttribute("aria-controls");
+            tabButtons.forEach((_tabButton) =>
+                _tabButton.setAttribute("aria-selected", false)
+            );
+            tabButton.setAttribute("aria-selected", true);
+            tabContainer
+                .querySelectorAll("[role=tabpanel]")
+                .forEach((tabPanel) => tabPanel.setAttribute("hidden", true));
+            tabContainer
+                .querySelector(`[role=tabpanel]#${targetId}`)
+                .removeAttribute("hidden");
+        });
+    });
+
+</script>
+
+</html>
