@@ -2,576 +2,177 @@
 <html>
 
 <head>
-    <title>LINEAGE W - 2022.11.04</title>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
-    <style>
-        * {
-            -webkit-user-select: none;
-        }
-
-        input {
-            width: 25px;
-            text-align: center;
-        }
-
-        .toggleSwitch {
-            width: 3rem;
-            height: 1.5rem;
-            display: block;
-            position: relative;
-            border-radius: 2rem;
-            background-color: #fff;
-            box-shadow: 0 0 1rem 3px rgba(0 0 0 / 15%);
-            cursor: pointer;
-        }
-
-        .toggleSwitch .toggleButton {
-            width: 1.3rem;
-            height: 1.3rem;
-            position: absolute;
-            top: 50%;
-            left: .2rem;
-            transform: translateY(-50%);
-            border-radius: 50%;
-            background: gray;
-        }
-
-        .toggleSwitch.active {
-            background: green;
-        }
-
-        .toggleSwitch.active .toggleButton {
-            left: calc(100% - 1.4rem);
-            background: #fff;
-        }
-
-        .toggleSwitch,
-        .toggleButton {
-            transition: all 0.2s ease-in;
-        }
-    </style>
+    <title>LINEAGE W - 2023.01.29</title>
 </head>
 
 <body>
-    <fieldset style="width:350px">
-        <legend>메인</legend>
-        <div class="field-row">
-            <button id="capture" onclick="startCapture()">캡쳐</button>
-            <button id="connect" onclick="connect()">연결</button>
-            <button onclick="test()">테스트</button>
-            <button onclick="blog()">블로그 열기</button>
-        </div>
+    <video id="video" autoplay width="640px"></video>
+    <div id="control" style="display:inline-block; float: left; width:300px;"></div>
+    <div id="setting" style="display:inline-block; float: left; width:300px;"></div>
 
-        <div class="field-row">
-            <span id="hpVal" style="width:75px; padding:3px;text-align: center;">100%</span>
-            <canvas id="hpImg" width="200px" height="6px"></canvas>
-        </div>
-        <div class="field-row">
-            <span id="mpVal" style="width:75px; padding:3px; text-align: center;">100%</span>
-            <canvas id="mpImg" width="200px" height="6px"></canvas>
-        </div>
-        <div class="field-row">
-            <span onclick="toggleRun()">실행하기</span>
-            <span id="run" class="toggleSwitch" onclick="toggleRun()">
-                <span class="toggleButton"></span>
-            </span>
-            <label>&nbsp;&nbsp;&nbsp;</label>
-            <label>&nbsp;&nbsp;&nbsp;</label>
-            <input id="baseCharacter" type="radio" name="character" checked="true">
-            <label for="baseCharacter">기사/군주/요정/법사</label>
-            <label>&nbsp;&nbsp;&nbsp;</label>
-            <input id="suraCharacter" type="radio" name="character">
-            <label for="suraCharacter">수라</label>
-        </div>
-        <hr>
-        <div class="fluid-row">
-            <input type="checkbox" id="homeUse">
-            <label for="homeUse">자동귀환 사용</label>
-            <label>&nbsp;&nbsp;&nbsp;</label>
-            <input type="checkbox" id="homePotionUse">
-            <label for="homePotionUse">물약오링귀환 사용</label>
-            <label>&nbsp;&nbsp;&nbsp;</label>
-            <input type="checkbox" id="pkActionUse">
-            <label for="pkActionUse">전투대응 사용</label>
-            <br><br>
-            <input type="checkbox" id="timer1Use">
-            <label for="timer1Use">타이머-1 사용</label>
-            <label>&nbsp;&nbsp;&nbsp;</label>
-            <input type="checkbox" id="timer2Use">
-            <label for="timer2Use">타이머-2 사용</label>
-            <label>&nbsp;&nbsp;&nbsp;</label>
-            <input type="checkbox" id="timer3Use">
-            <label for="timer3Use">타이머-3 사용</label>
-        </div>
-
-    </fieldset>
-    <fieldset style="width:350px">
-        <legend>설정</legend>
-        <div class="field-row">
-            <section class="tabs">
-                <menu role="tablist" aria-label="Sample Tabs">
-                    <button role="tab" aria-selected="true" aria-controls="tab-A">자동귀환</button>
-                    <button role="tab" aria-controls="tab-B">전투대응</button>
-                    <button role="tab" aria-controls="tab-C">타이머-1</button>
-                    <button role="tab" aria-controls="tab-D">타이머-2</button>
-                    <button role="tab" aria-controls="tab-E">타이머-3</button>
-                </menu>
-                <article role="tabpanel" id="tab-A">
-                    <!-- <div class="field-row">
-                        <input type="checkbox" id="homeUse">
-                        <label for="homeUse">자동귀환 사용</label>
-                        <label>&nbsp;&nbsp;&nbsp;</label>
-                        <input type="checkbox" id="homePotionUse">
-                        <label for="homePotionUse">물약오링귀환 사용</label>
-                    </div>
-                    <hr> -->
-                    <div class="field-row">
-                        <label>사용구간(HP):</label>
-                        <input id="homeHpMin" type="text">
-                        <span>~</span>
-                        <input id="homeHpMax" type="text">
-                        <label>&nbsp;</label>
-                        <label>재사용:</label>
-                        <input id="homeCool" type="text">
-                    </div>
-                    <div class="field-row">
-                        <label>입력키:</label>
-                        <input id="homeKey" type="text">
-                        <label>&nbsp;</label>
-                        <label>횟수:</label>
-                        <input id="homeCount" type="text">
-                        <label>&nbsp;</label>
-                        <label>딜레이:</label>
-                        <input id="homeCountDelay" type="text">
-                    </div>
-                </article>
-
-                <article role="tabpanel" hidden id="tab-B">
-                    <!-- <div class="field-row">
-                        <input type="checkbox" id="pkActionUse">
-                        <label for="pkActionUse">전투대응 사용</label>
-                    </div>
-                    <hr> -->
-                    <div class="field-row">
-                        <label>입력키:</label>
-                        <input id="pkActionKey" type="text">
-                        <label>&nbsp;</label>
-                        <label>횟수:</label>
-                        <input id="pkActionCount" type="text">
-                        <label>&nbsp;</label>
-                        <label>딜레이:</label>
-                        <input id="pkActionCountDelay" type="text">
-                    </div>
-                    <div class="field-row">
-                        <label>입력대기시간:</label>
-                        <input id="pkActionInputDelay" type="text">
-                        <label>&nbsp;</label>
-                        <label>재사용:</label>
-                        <input id="pkActionCool" type="text">
-                    </div>
-                </article>
-
-                <article role="tabpanel" hidden id="tab-C">
-                    <!-- <div class="field-row">
-                        <input type="checkbox" id="timer1Use">
-                        <label for="timer1Use">타이머-1 사용</label>
-                    </div>
-                    <hr> -->
-                    <div class="field-row">
-                        <label>사용구간(HP):</label>
-                        <input id="timer1HpMin" type="text">
-                        <span>~</span>
-                        <input id="timer1HpMax" type="text">
-                        <label>&nbsp;</label>
-                        <label>사용구간(MP):</label>
-                        <input id="timer1MpMin" type="text">
-                        <span>~</span>
-                        <input id="timer1MpMax" type="text">
-                    </div>
-                    <div class="field-row">
-                        <label>입력키:</label>
-                        <input id="timer1Key" type="text">
-                        <label>&nbsp;</label>
-                        <label>횟수:</label>
-                        <input id="timer1Count" type="text">
-                        <label>&nbsp;</label>
-                        <label>딜레이:</label>
-                        <input id="timer1CountDelay" type="text">
-                        <label>&nbsp;</label>
-                        <label>재사용:</label>
-                        <input id="timer1Cool" type="text">
-                    </div>
-                </article>
-
-                <article role="tabpanel" hidden id="tab-D">
-                    <!-- <div class="field-row">
-                        <input type="checkbox" id="timer2Use">
-                        <label for="timer2Use">타이머-2 사용</label>
-                    </div>
-                    <hr> -->
-                    <div class="field-row">
-                        <label>사용구간(HP):</label>
-                        <input id="timer2HpMin" type="text">
-                        <span>~</span>
-                        <input id="timer2HpMax" type="text">
-                        <label>&nbsp;</label>
-                        <label>사용구간(MP):</label>
-                        <input id="timer2MpMin" type="text">
-                        <span>~</span>
-                        <input id="timer2MpMax" type="text">
-                    </div>
-                    <div class="field-row">
-                        <label>입력키:</label>
-                        <input id="timer2Key" type="text">
-                        <label>&nbsp;</label>
-                        <label>횟수:</label>
-                        <input id="timer2Count" type="text">
-                        <label>&nbsp;</label>
-                        <label>딜레이:</label>
-                        <input id="timer2CountDelay" type="text">
-                        <label>&nbsp;</label>
-                        <label>재사용:</label>
-                        <input id="timer2Cool" type="text">
-                    </div>
-                </article>
-
-                <article role="tabpanel" hidden id="tab-E">
-                    <!-- <div class="field-row">
-                        <input type="checkbox" id="timer3Use">
-                        <label for="timer3Use">타이머-3 사용</label>
-                    </div>
-                    <hr> -->
-                    <div class="field-row">
-                        <label>사용구간(HP):</label>
-                        <input id="timer3HpMin" type="text">
-                        <span>~</span>
-                        <input id="timer3HpMax" type="text">
-                        <label>&nbsp;</label>
-                        <label>사용구간(MP):</label>
-                        <input id="timer3MpMin" type="text">
-                        <span>~</span>
-                        <input id="timer3MpMax" type="text">
-                    </div>
-                    <div class="field-row">
-                        <label>입력키:</label>
-                        <input id="timer3Key" type="text">
-                        <label>&nbsp;</label>
-                        <label>횟수:</label>
-                        <input id="timer3Count" type="text">
-                        <label>&nbsp;</label>
-                        <label>딜레이:</label>
-                        <input id="timer3CountDelay" type="text">
-                        <label>&nbsp;</label>
-                        <label>재사용:</label>
-                        <input id="timer3Cool" type="text">
-                    </div>
-                </article>
-            </section>
-        </div>
-    </fieldset>
-    <fieldset style="width:350px">
-        <legend>후원관련</legend>
-        <div class="field-row">
-            <img id="donation" style="display:inline-block">
-            <div>
-                <span>지속적인 유지관리를 위해 후원할 수 있습니다.</span>
-                <span>왼쪽 QR코드를 휴대폰 카메라로 찍으면 카카오페이로 이동합니다.</span>
-            </div>
-        </div>
-    </fieldset>
-    <fieldset style="width:350px">
-        <legend>공지-2022.11.04</legend>
-        <span>HP/MP인식을 위해 수라 캐릭터를 별도 가능하도록 수정했습니다.</span>
-        <span>사용자 인터페이스를 약간 수정했습니다.</span>
-    </fieldset>
-    <div id="details" style="display:none">
-        <video id="video" autoplay></video>
-        <canvas id="hpImg"></canvas>
-        <canvas id="hpImgRed"></canvas>
-        <canvas id="hpImgBlur"></canvas>
-        <canvas id="hpImgThres"></canvas>
-        <canvas id="mpImg"></canvas>
-        <canvas id="mpImgBlue"></canvas>
-    </div>
 </body>
-
+<script async src="https://docs.opencv.org/4.7.0/opencv.js" onload="cvReady()" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.1/dist/tweakpane.min.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/@tweakpane/plugin-essentials@0.1.5/dist/tweakpane-plugin-essentials.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tweakpane-image-plugin@1.1.3/dist/tweakpane-image-plugin.min.js"></script>
 <script>
-    let port, writer, potionTarget, pkTarget;
-    let teleToken, teleId;
-    let teleConnect = false;
-    let running = false;
     let cvLoad = false;
-    const encoder = new TextEncoder();
+    let onPk = false;
+    let arduinoConnect = false;
+    let pythonConnect = false;
+    let teleConnect = false;
+    let teleId;
+    let writer;
+    let hpNow;
+    let mpNow;
+
+    let pkTarget;
+    let pkTargetImage = new Image();
+
+    let noPotion = false;
+    let potionTarget;
+    let potionTargetImage = new Image();
+    pkTargetImage.src = "data:image/png;base64,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";
+    potionTargetImage.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAAXNSR0IArs4c6QAAAjdJREFUKFMdkE1LVGEAhZ/3fjj3Xp0740zmlBsx8gPTmHIRFAW1EaMpLapFQYSraNUmSGiRVrZpUwuhQCikiIJq4aIW/YGg2oY05pgbp5zr6NyZ+/G+4Zz94XnOEc8eXFcmCj2OCfw6cayQCqQEwzCw7ASNKES3LaSuEUkQL2YnVRJFolqltPSLQOpUvCpKgpt0SNoGbkeW2HWpJxKsV2uIN9PX1MbSTyzPwxQGxXKVOx8WQSkeX5xgb7IFYYDvtCIzGUq1BuL1zdMqWF3GajQw29r5uuYxs/iZndwrjDKQNsGv0tB1okyWWm4PYq4wrLJBDVuDTWnw3ZM8+vQFUEyNnqLfinAJiQDfTRH19yPmC8MqpwJMTeC3tPHDi5h697Gp9/B8gX1mQFqEhHFM2TAw8ocRrybyyt320DRBYCVZxeHG/AKUVnhy+xY5tUUiqKFpGp5lU+vtQyyM51Vqu4KUMYFps2EkmZyZpb5c5OXcUzq0ADP0mxsrCQu/dwDxfHxEdcoGpgzxlcZaZFAqexi6Rk9nlix1zLhBoGiSoh3SlV5XHd/fTVbWkZrBt3KN+80jYObsGAczFnpUJ7RbWQlC2g/lEZdHulWP69CXdhBCo7gVcvft+2Zp+sI5uswIXUh8yyFKpcgNDSKujh1R0abHxu8iI0ODOJZDHMcoqbASBokWjeKfEnbnbnoODGKnXcSlM8eUkJJ4u8bW33XCyj80GSNjST2KOHryBLu6cphJB63FwLEt/gPkt/XajD1j6gAAAABJRU5ErkJggg==";
+
     const video = document.querySelector("#video");
     const canvas = document.createElement("canvas");
     const canvasFull = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const ctxFull = canvasFull.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const ctxFull = canvasFull.getContext("2d", { willReadFrequently: true });
+    const encoder = new TextEncoder();
 
-    const donationImg = document.querySelector("#donation");
-    donationImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABaCAYAAABOkvOJAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAAEZ0FNQQAAsY8L/GEFAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAlZ0lEQVR4Xu2dd5xVxdnHn122sHQUFBBBxaiIoqgRe43dGBPBEsWILUaNJdYkptiTKIm9EBMNQjQxGDEaG7EgaiygsSEW7IBU6W3Z8z7f557n7ty55969i77vmz/88ZnP3SlnzpyZp8+cQ1WikK/wX4Pq9Pcr/JfgqwX5L0OByPrTn/4kP/nJT6RTp07SGklWVVUl8+bNk/vvv18GDx4s7777ruyyyy7StWtXq589e7ZMmzbN+h06dKhMmjRJ6urqZPXq1bLWWmvJ888/b+022GADWbVqlZx77rly9tlnyyOPPCJHH320bLLJJvLss89am+9+97vy2GOPyRVXXCEnnXSSlZXCpZdeKrfccov06NHD7hli//33l9dff1323HNPufPOO9PSbNxzzz1y6qmnyrbbbisPP/xwWprDL3/5S/njH/8o7du3b9Wcgc8//1wmT54svXr1SksULIjjqquuosc1Tv/617+sH33QojrHxhtvXLLO8+edd57lR40aVdRmxx13tPzvfve7tKQ0zjrrLGtbU1OTljSjY8eOVrf11lunJaUxcuRIa8s1MY4//nirW9P04Ycfpj3lUCCydOD2+/Wvf12amppk1qxZZROU39jYKN27d7frqqtz3flvCNrAFTfffLNRRthPDB/HEUccYfeYMmWK1NbWGqW/8MILVvfTn/5U1l13Xes3K1EHdwDuG+P999+3cVx22WXG4Ztttllak+P4bt26WT8dOnSQl19+WZYuXWrXxGBcYPjw4bJy5cqC58pKc+bMkQULFtg1gHsVIF0YA1RH0U477ZSWVAYduF33xBNPWP7NN98soIIwTZ061dpkwdtcfPHFaUkzwj5am9q1a5f2UgydbGvTuXPntKT4XieccEJaU4zvf//71ua0005LSyqD9/3RRx+lJTnkSDEC3OFAp3z22WfSpk2btER70f7gjNtvvz0tqRwXXHCBUR7Ufskll6Slhfj73/9unLFixQq7L9RZCnDzGWecYVw1bNgwGxfcs8UWWxiHPPXUU2nLQlx00UVGsTNnzrS8cyUYMWKEjRHdgr5y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";
-    const potionEmptyImg = new Image();
-    const pkImg = new Image();
-
-    let userData = {
-        "capHpX": 90,
-        "capHpY": 32,
-        "capHpW": 190,
-        "capHpH": 6,
-        "capMpX": 90,
-        "capMpY": 45,
-        "capMpW": 190,
-        "capMpH": 6,
-
-        "homeUse": false,
-        "homeHpMin": 0,
-        "homeHpMax": 40,
-        "homeKey": "8",
-        "homeCount": 2,
-        "homeCountDelay": 1,
-        "homeCool": 0,
-        "homePotionUse": false,
-        "homePotionThres": 1000000,
-        "homePotionPosX": 472,
-        "homePotionPosY": 635,
-        "homePotionPosW": 13,
-        "homePotionPosH": 13,
-
-        "pkActionUse": false,
-        "pkActionThres": 1000000,
-        "pkActionPosX": 1057,
-        "pkActionPosY": 533,
-        "pkActionPosW": 25,
-        "pkActionPosH": 25,
-        "pkActionKey": "7",
-        "pkActionCount": 2,
-        "pkActionCountDelay": 0.5,
-        "pkActionCool": 5,
-        "pkActionInputDelay": 0,
-
-        "timer1Use": false,
-        "timer1HpMin": 40,
-        "timer1HpMax": 60,
-        "timer1MpMin": 0,
-        "timer1MpMax": 100,
-        "timer1Key": "7",
-        "timer1Count": 1,
-        "timer1CountDelay": 0.5,
-        "timer1Cool": 5,
-
-        "timer2Use": false,
-        "timer2HpMin": 60,
-        "timer2HpMax": 80,
-        "timer2MpMin": 30,
-        "timer2MpMax": 100,
-        "timer2Key": "4",
-        "timer2Count": 1,
-        "timer2CountDelay": 0.5,
-        "timer2Cool": 5,
-
-        "timer3Use": false,
-        "timer3HpMin": 0,
-        "timer3HpMax": 40,
-        "timer3MpMin": 0,
-        "timer3MpMax": 100,
-        "timer3Key": "1",
-        "timer3Count": 1,
-        "timer3CountDelay": 0.5,
-        "timer3Cool": 1
+    const cooltime = {
+        "slot1": false,
+        "slot2": false,
+        "slot3": false,
+        "slot4": false,
+        "slot5": false,
+        "pk": false,
     }
 
-    const teleGet = () => {
-        fetch(`https://api.telegram.org/bot${teleToken}/getUpdates`).then(res => {
-            res.json().then(data => {
-                teleId = data.result[0].message.chat.id;
-                console.log("텔레그램과 연결되었습니다.");
-                teleSend("텔레그램과 연결되었습니다");
-                teleConnect = true;
-            }).catch(err => {
-                console.log("텔레그램에 연결에 실패했습니다.");
-            });
-        });
-    }
+    const param = {
+        hpImage: new Image(),
+        mpImage: new Image(),
 
-    const makeFile = (canvasEle) => {
-        const blobBin = atob(canvasEle.toDataURL().split(",")[1]);
-        const array = [];
-        for (let i = 0; i < blobBin.length; i++) {
-            array.push(blobBin.charCodeAt(i));
-        }
-        const file = new Blob([new Uint8Array(array)], { type: "image/png" });
-        return file;
-    }
+        capture: "확인되지 않음",
+        arduino: "연결되지 않음",
+        telegram: "연결되지 않음",
+        teleToken: "",
 
-    const teleSendPhoto = (canvasEle, caption) => {
-        const url = `https://api.telegram.org/bot${teleToken}/sendphoto?chat_id=${teleId}`
-        const file = makeFile(canvasEle);
-        const teleData = new FormData();
-        teleData.append("photo", file);
-        teleData.append("caption", caption);
-        fetch(url, {
-            method: "POST",
-            body: teleData
-        });
-    }
+        sura: false,
 
-    const teleSend = (msg) => {
-        const url = `https://api.telegram.org/bot${teleToken}/sendMessage?chat_id=${teleId}&text=${msg}`;
-        fetch(url);
-    }
+        hpCap: { x: 90, y: 32 },
+        hpCapW: 190,
+        hpCapH: 6,
 
-    if (localStorage.getItem("userData") == null) {
-        console.log("웹스토리지에 자료가 없습니다. 현재 데이터를 저장합니다.");
-        localStorage.setItem("userData", JSON.stringify(userData));
-    } else {
-        console.log("웹스토리지의 데이터를 불러옵니다.");
-        userData = JSON.parse(localStorage.getItem("userData"));
-    }
+        mpCap: { x: 90, y: 45 },
+        mpCapW: 190,
+        mpCapH: 6,
 
-    if (localStorage.getItem("telegram") == null && localStorage.getItem("donationToken") == null) {
-        console.log("웹스토리지에 텔레그램 토큰이 없습니다.");
-    } else if (localStorage.getItem("telegram")) {
-        console.log("웹스토리지에서 텔레그램 토큰을 불러옵니다.");
-        teleToken = localStorage.getItem("telegram");
-        teleGet();
-    } else if (localStorage.getItem("donationToken")) {
-        console.log("후원자용 토큰을 사용합니다.");
-        teleToken = localStorage.getItem("donationToken");
-        teleId = parseInt(localStorage.getItem("donationId"));
-        teleSend("텔레그램과 연결되었습니다");
-        console.log("텔레그램과 연결되었습니다.");
-    }
+        slot1Label: "SLOT-1",
+        slot1Use: false,
+        slot1Hp: { min: 0, max: 30 },
+        slot1Mp: { min: 0, max: 100 },
+        slot1Key: "8",
+        slot1Count: 4,
+        slot1Delay: 0.2,
+        slot1Cooltime: 5,
+        slot1Repeat: false,
+        slot1TeleUse: false,
 
-    const inCool = {
-        "home": false,
-        "pkAction": false,
-        "timer1": false,
-        "timer2": false,
-        "timer3": false,
-    }
+        slot2Label: "SLOT-2",
+        slot2Use: false,
+        slot2Hp: { min: 0, max: 100 },
+        slot2Mp: { min: 0, max: 20 },
+        slot2Key: "8",
+        slot2Count: 4,
+        slot2Delay: 0.2,
+        slot2Cooltime: 5,
+        slot2Repeat: false,
+        slot2TeleUse: false,
 
-    document.querySelectorAll("input").forEach(ele => {
-        ele.addEventListener("change", () => {
-            if (ele.id.includes("Use")) {
-                userData[ele.id] = ele.checked;
-            } else if (ele.id.includes("Key")) {
-                userData[ele.id] = ele.value;
-            } else if (ele.id.includes("Delay")) {
-                userData[ele.id] = parseFloat(ele.value);
-            } else if (ele.id.includes("Cool")) {
-                userData[ele.id] = parseFloat(ele.value);
-            } else if (ele.id.includes("suraCharacter")) {
-                userData.capHpY = 37;
-                userData.capMpY = 51;
-            } else if (ele.id.includes("baseCharacter")) {
-                userData.capHpY = 32;
-                userData.capMpY = 45;
-            }
-            else {
-                userData[ele.id] = parseInt(ele.value);
-            }
-            console.log(`${ele.id}값이 ${userData[ele.id]}으로 변경되었습니다.`);
-            localStorage.setItem("userData", JSON.stringify(userData));
-        });
-    });
+        slot3Label: "SLOT-3",
+        slot3Use: false,
+        slot3Hp: { min: 0, max: 80 },
+        slot3Mp: { min: 0, max: 20 },
+        slot3Key: "4",
+        slot3Count: 1,
+        slot3Delay: 0.2,
+        slot3Cooltime: 5,
+        slot3Repeat: false,
+        slot3TeleUse: false,
 
-    const test = () => {
-        console.log("입력 테스트를 진행합니다.");
-        console.log("3초 후, 1초 간격으로 i키을 4회 누릅니다.");
-        for (i = 3; i < 7; i++) {
-            setTimeout(() => send('i'), i * 1000);
-        }
-        setTimeout(() => alert("입력 테스트가 종료되었습니다."), 7000);
-    }
+        slot4Label: "SLOT-4",
+        slot4Use: false,
+        slot4Hp: { min: 0, max: 100 },
+        slot4Mp: { min: 0, max: 100 },
+        slot4Key: "f",
+        slot4Count: 1,
+        slot4Delay: 0.2,
+        slot4Cooltime: 0.2,
+        slot4Repeat: true,
+        slot4TeleUse: false,
 
-    const updateData = () => {
-        Object.keys(userData).forEach(data => {
-            if (data.includes("Use")) {
-                document.getElementById(data).checked = userData[data];
-            } else if (data.includes("cap") || data.includes("Pos")) {
-                //Nothing
-            }
-            else if (data.includes("Thres")) {
-                //Nothing
-            }
-            else if (data.includes("sura")) {
-                //Nothing
-            }
-            else if (data.includes("Character")) {
-                //Nothing
-            } else {
-                document.getElementById(data).value = userData[data];
-            }
-        });
-    }
-    updateData();
+        slot5Label: "SLOT-5",
+        slot5Use: false,
+        slot5Hp: { min: 0, max: 100 },
+        slot5Mp: { min: 0, max: 100 },
+        slot5Key: "f",
+        slot5Count: 1,
+        slot5Delay: 0.2,
+        slot5Cooltime: 0.2,
+        slot5Repeat: true,
+        slot5TeleUse: false,
 
-    const blog = () => {
-        window.open("https://mandloh.tistory.com/136");
-    }
+        pkImage: new Image(),
+        pkUse: false,
+        pkKey: "8",
+        pkCount: 2,
+        pkDelay: 0.2,
+        pkCooltime: 5,
+        pkRepeat: true,
+        pkCap: { x: 1057, y: 533 },
+        pkCapW: 25,
+        pkCapH: 25,
+        pkThresNow: 0,
+        pkThres: 700000,
 
-    const toggleRun = () => {
-        const ele = document.querySelector(".toggleSwitch");
-        running = !running;
-        if (running) {
-            ele.classList.add("active");
-            console.log("앱을 실행합니다.");
-        }
-        else {
-            ele.classList.remove("active");
-            console.log("앱이 중지되었습니다.");
-        }
+        potionImage: new Image(),
+        potionUse: false,
+        potionKey: "8",
+        potionCap: { x: 472, y: 635 },
+        potionCapW: 13,
+        potionCapH: 13,
+        potionThresNow: 0,
+        potionThres: 700000,
     }
 
     const cvReady = () => {
+        console.log("opencv.js ready");
         cvLoad = true;
-        console.log("Opencv ready.");
-        potionEmptyImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAAXNSR0IArs4c6QAAAjdJREFUKFMdkE1LVGEAhZ/3fjj3Xp0740zmlBsx8gPTmHIRFAW1EaMpLapFQYSraNUmSGiRVrZpUwuhQCikiIJq4aIW/YGg2oY05pgbp5zr6NyZ+/G+4Zz94XnOEc8eXFcmCj2OCfw6cayQCqQEwzCw7ASNKES3LaSuEUkQL2YnVRJFolqltPSLQOpUvCpKgpt0SNoGbkeW2HWpJxKsV2uIN9PX1MbSTyzPwxQGxXKVOx8WQSkeX5xgb7IFYYDvtCIzGUq1BuL1zdMqWF3GajQw29r5uuYxs/iZndwrjDKQNsGv0tB1okyWWm4PYq4wrLJBDVuDTWnw3ZM8+vQFUEyNnqLfinAJiQDfTRH19yPmC8MqpwJMTeC3tPHDi5h697Gp9/B8gX1mQFqEhHFM2TAw8ocRrybyyt320DRBYCVZxeHG/AKUVnhy+xY5tUUiqKFpGp5lU+vtQyyM51Vqu4KUMYFps2EkmZyZpb5c5OXcUzq0ADP0mxsrCQu/dwDxfHxEdcoGpgzxlcZaZFAqexi6Rk9nlix1zLhBoGiSoh3SlV5XHd/fTVbWkZrBt3KN+80jYObsGAczFnpUJ7RbWQlC2g/lEZdHulWP69CXdhBCo7gVcvft+2Zp+sI5uswIXUh8yyFKpcgNDSKujh1R0abHxu8iI0ODOJZDHMcoqbASBokWjeKfEnbnbnoODGKnXcSlM8eUkJJ4u8bW33XCyj80GSNjST2KOHryBLu6cphJB63FwLEt/gPkt/XajD1j6gAAAABJRU5ErkJggg=="
-        pkImg.src = "data:image/png;base64,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"
         setTimeout(() => {
-            potionTarget = cv.imread(potionEmptyImg);
-            pkTarget = cv.imread(pkImg);
-        }, 1000);
+            pkTarget = cv.imread(pkTargetImage);
+            potionTarget = cv.imread(potionTargetImage);
+            console.log("Image matching ready.");
+        }, 2000);
     }
 
     const startCapture = async () => {
-        if (cvLoad) {
+        if (cvLoad === false) {
+            alert("Opencv.js not loaded.");
+            return;
+        } else {
             video.srcObject = await navigator.mediaDevices.getDisplayMedia({
-                video: { cursor: "always", frameRate: { ideal: 5, max: 5 } },
+                video: { cursor: "always", frameRate: { ideal: 10, max: 10 } },
                 audio: false,
             });
-            console.log("캡처를 시작합니다.");
-            setTimeout(captureLoop, 1000);
-        } else {
-            alert("Opencv.js가 로드되지 않았습니다.\n새로고침 후 다시 해보세요.");
+            btnCapture.label = "캡처완료";
+            setTimeout(captureLoop, 2000);
+            setTimeout(controlLoop, 3000);
         }
     }
-
-    const stopCapture = () => {
-        const tracks = video.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
-        video.srcObject = null;
-    }
-
-    const connect = async () => {
-        try {
-            port = await navigator.serial.requestPort();
-            await port.open({ baudRate: 9600 });
-            reader = port.readable.getReader();
-            writer = port.writable.getWriter();
-            console.log("아두이노가 연결되었습니다.");
-        } catch (err) {
-            console.error("에러: " + err);
-        }
-    }
-
-    const send = (data) => {
-        console.log("Send: " + data);
-        const dataArrayBuffer = encoder.encode(data);
-        writer.write(dataArrayBuffer);
-    }
-
 
     const captureLoop = () => {
         //video 이미지를 1280x720으로 불러오기
@@ -579,30 +180,33 @@
         canvasFull.height = video.videoHeight;
         ctxFull.drawImage(video, 0, 0, canvasFull.width, canvasFull.height, 0, 0, 1280, 720);
 
+
         //1280x720 이미지에서 HP 부분 잘라오기
-        canvas.width = userData.capHpW;
-        canvas.height = userData.capHpH;
-        ctx.drawImage(canvasFull, userData.capHpX, userData.capHpY, userData.capHpW, userData.capHpH, 0, 0, userData.capHpW, userData.capHpH);
+        canvas.width = param.hpCapW;
+        canvas.height = param.hpCapH;
+        if (param.sura) {
+            ctx.drawImage(canvasFull, param.hpCap.x, param.hpCap.y + 5, param.hpCapW, param.hpCapH, 0, 0, param.hpCapW, param.hpCapH);
+        }
+        else {
+            ctx.drawImage(canvasFull, param.hpCap.x, param.hpCap.y, param.hpCapW, param.hpCapH, 0, 0, param.hpCapW, param.hpCapH);
+        }
+        param.hpImage.src = canvas.toDataURL();
         const hpImg = cv.imread(canvas);
-        cv.imshow("hpImg", hpImg);
 
         //HP Red 값만 추출하기
         const hpImgPlanes = new cv.MatVector();
         cv.split(hpImg, hpImgPlanes);
         const hpRed = hpImgPlanes.get(0);
-        cv.imshow("hpImgRed", hpRed);
 
         //HP 블러 처리하기
         const hpBlur = new cv.Mat();
         const ksize = new cv.Size(5, 5);
         const anchor = new cv.Point(-1, -1)
         cv.blur(hpRed, hpBlur, ksize, anchor, cv.BORDER_DEFAULT);
-        cv.imshow("hpImgBlur", hpBlur);
 
         //HP 임계 처리하기
         const hpThres = new cv.Mat();
         cv.threshold(hpBlur, hpThres, 210, 255, cv.THRESH_BINARY);
-        cv.imshow("hpImgThres", hpThres);
 
         //HP 계산하기
         const hpData1D = [];
@@ -628,11 +232,19 @@
         const hpRatio_ = Math.round((hpThres.size().width - hpMinIdx) / hpThres.size().width * 100);
         //22.08.22 추가 - HP가 0인 경우 대부분 오류이므로 100%로 인식하도록 조치.
         const hpRatio = hpRatio_ == 0 ? 100 : hpRatio_;
+        hp.label = `체력:${hpRatio}%`;
+        hpNow = hpRatio;
+
 
         //1280x720 이미지에서 MP 부분 잘라오기
-        canvas.width = userData.capMpW;
-        canvas.height = userData.capMpH;
-        ctx.drawImage(canvasFull, userData.capMpX, userData.capMpY, userData.capMpW, userData.capMpH, 0, 0, userData.capMpW, userData.capMpH);
+        canvas.width = param.mpCapW;
+        canvas.height = param.mpCapH;
+        if (param.sura) {
+            ctx.drawImage(canvasFull, param.mpCap.x, param.mpCap.y + 6, param.mpCapW, param.mpCapH, 0, 0, param.mpCapW, param.mpCapH);
+        } else {
+            ctx.drawImage(canvasFull, param.mpCap.x, param.mpCap.y, param.mpCapW, param.mpCapH, 0, 0, param.mpCapW, param.mpCapH);
+        }
+        param.mpImage.src = canvas.toDataURL();
         const mpImg = cv.imread(canvas);
 
         //MP Blue 값만 추출하기
@@ -640,7 +252,6 @@
         const mpHigh = new cv.Mat(mpImg.rows, mpImg.cols, mpImg.type(), [120, 200, 200, 255]);
         const mpBlue = new cv.Mat();
         cv.inRange(mpImg, mpLow, mpHigh, mpBlue);
-        cv.imshow("mpImgBlue", mpBlue);
 
         //MP 계산하기
         const mpData1D = [];
@@ -655,166 +266,61 @@
 
         //배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)   
         for (i = 0; i < mpData2D.length; i++) {
-            // fix. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
+            // fix. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정잘라오기
             const idx = mpData2D[i].reverse().indexOf(255);
             const value = idx < 0 ? mpImg.size().width : idx;
             mpMaxAry.push(value);
         }
 
-        //mpMaxAry의 가장 작은값 찾아 HP비율로 계산
+        //mpMaxAry의 가장 작은값 찾아 MP비율로 계산
         const mpMinIdx = Math.min.apply(null, mpMaxAry) < 0 ? 0 : Math.min.apply(null, mpMaxAry);
         const mpRatio = Math.round((mpBlue.size().width - mpMinIdx) / mpBlue.size().width * 100);
-
-        document.querySelector("#hpVal").innerHTML = `${hpRatio}%`;
-        document.querySelector("#mpVal").innerHTML = `${mpRatio}%`;
-        cv.imshow("mpImg", mpImg);
-
-        // 각종 기능 제어하기
-        if (running) {
-            // Auto home
-            if (userData.homeUse && !inCool.home) {
-                if (hpRatio >= userData.homeHpMin && hpRatio <= userData.homeHpMax) {
-                    console.log("자동귀환이 실행되었습니다.");
-                    teleSendPhoto(canvasFull, "자동귀환");
-                    for (let i = 0; i < userData.homeCount; i++) {
-                        setTimeout(() => {
-                            send(userData.homeKey);
-                        }, userData.homeCountDelay * i * 1000);
-                    }
-                    if (userData.homeCool > 0) {
-                        inCool.home = true;
-                        console.log(`${userData.homeCool}초간 자동귀환 쿨타임이 적용됩니다.`);
-                        setTimeout(() => {
-                            inCool.home = false;
-                            console.log("자동귀환 쿨타임이 해제되었습니다.");
-                        }, userData.homeCool * 1000);
-                    } else {
-                        console.log("무한반복 귀환을 방지하기 위해 대기상태로 전환합니다.");
-                        toggleRun();
-                    }
-                }
-            }
+        mp.label = `마나:${mpRatio}%`;
+        mpNow = mpRatio;
 
 
-            // Potion home
-            if (userData.homePotionUse) {
-                //1280x720 이미지에서 물약이미지 잘라오기
-                canvas.width = userData.homePotionPosW;
-                canvas.height = userData.homePotionPosH;
-                ctx.drawImage(canvasFull, userData.homePotionPosX, userData.homePotionPosY, userData.homePotionPosW, userData.homePotionPosH, 0, 0, userData.homePotionPosW, userData.homePotionPosH);
-                const potionImg = cv.imread(canvas);
+        //1280x720 이미지에서 PK이미지 잘라오기
+        canvas.width = param.pkCapW;
+        canvas.height = param.pkCapH;
+        ctx.drawImage(canvasFull, param.pkCap.x, param.pkCap.y, param.pkCapW, param.pkCapH, 0, 0, param.pkCapW, param.pkCapH);
+        param.pkImage.src = canvas.toDataURL();
+        const pkImg = cv.imread(canvas);
 
-                //물약 이미지 매칭
-                const potionResult = new cv.Mat();
-                const potionMask = new cv.Mat();
-                cv.matchTemplate(potionTarget, potionImg, potionResult, cv.TM_CCOEFF, potionMask);
-                const potionRoc = cv.minMaxLoc(potionResult, potionMask);
-                if (Math.round(potionRoc.maxVal) >= userData.homePotionThres) {
-                    console.log("물약이 없습니다. 귀환합니다.");
-                    teleSendPhoto(canvasFull, "물약오링 귀환");
-                    for (let i = 0; i < userData.homeCount; i++) {
-                        setTimeout(() => {
-                            send(userData.homeKey);
-                        }, userData.homeCountDelay * i * 1000);
-                    }
-                    toggleRun();
-                    console.log("대기상태로 전환합니다.");
-                }
-                potionImg.delete();
-                potionResult.delete();
-                potionMask.delete();
-            }
-
-            // PK action
-            if (userData.pkActionUse && !inCool.pkAction) {
-                //1280x720 이미지에서 PK 부분 잘라오기
-                canvas.width = userData.pkActionPosW;
-                canvas.height = userData.pkActionPosH;
-                ctx.drawImage(canvasFull, userData.pkActionPosX, userData.pkActionPosY, userData.pkActionPosW, userData.pkActionPosH, 0, 0, userData.pkActionPosW, userData.pkActionPosH);
-                const pkImg = cv.imread(canvas);
-
-                //PK 이미지 매칭
-                const pkResult = new cv.Mat();
-                const pkMask = new cv.Mat();
-                cv.matchTemplate(pkTarget, pkImg, pkResult, cv.TM_CCOEFF, pkMask);
-                const pkRoc = cv.minMaxLoc(pkResult, pkMask);
-                if (Math.round(pkRoc.maxVal) >= userData.pkActionThres) {
-                    console.log("전투상황에 대응했습니다.");
-                    teleSendPhoto(canvasFull, "전투대응");
-                    //입력대기 적용
-                    setTimeout(() => {
-                        for (let i = 0; i < userData.pkActionCount; i++) {
-                            setTimeout(() => {
-                                send(userData.pkActionKey);
-                            }, userData.pkActionCountDelay * i * 1000);
-                        }
-                    }, userData.pkActionInputDelay * 1000);
-                    inCool.pkAction = true;
-                    console.log(`${userData.pkActionCool}초간 전투대응 쿨타임이 적용됩니다.`);
-                    setTimeout(() => {
-                        inCool.pkAction = false;
-                        console.log("전투대응 쿨타임이 해제되었습니다.");
-                    }, userData.pkActionCool * 1000);
-                }
-                pkImg.delete();
-                pkResult.delete();
-                pkMask.delete();
-            }
-
-            // timer1
-            if (userData.timer1Use && !inCool.timer1) {
-                if (hpRatio >= userData.timer1HpMin && hpRatio <= userData.timer1HpMax && mpRatio >= userData.timer1MpMin && mpRatio <= userData.timer1MpMax) {
-                    console.log("타이머-1 기능을 사용합니다.");
-                    for (let i = 0; i < userData.timer1Count; i++) {
-                        setTimeout(() => {
-                            send(userData.timer1Key);
-                        }, userData.timer1CountDelay * i * 1000);
-                    }
-                    inCool.timer1 = true;
-                    console.log(`${userData.timer1Cool}초간 타이머-1 쿨타임이 적용됩니다.`);
-                    setTimeout(() => {
-                        inCool.timer1 = false;
-                        console.log("타이머-1 쿨타임이 해제되었습니다.");
-                    }, userData.timer1Cool * 1000);
-                }
-            }
-
-            // timer2
-            if (userData.timer2Use && !inCool.timer2) {
-                if (hpRatio >= userData.timer2HpMin && hpRatio <= userData.timer2HpMax && mpRatio >= userData.timer2MpMin && mpRatio <= userData.timer2MpMax) {
-                    console.log("타이머-2 기능을 사용합니다.");
-                    for (let i = 0; i < userData.timer2Count; i++) {
-                        setTimeout(() => {
-                            send(userData.timer2Key);
-                        }, userData.timer2CountDelay * i * 1000);
-                    }
-                    inCool.timer2 = true;
-                    console.log(`${userData.timer2Cool}초간 타이머-2 쿨타임이 적용됩니다.`);
-                    setTimeout(() => {
-                        inCool.timer2 = false;
-                        console.log("타이머-2 쿨타임이 해제되었습니다.");
-                    }, userData.timer2Cool * 1000);
-                }
-            }
-
-            // timer3
-            if (userData.timer3Use && !inCool.timer3) {
-                if (hpRatio >= userData.timer3HpMin && hpRatio <= userData.timer3HpMax && mpRatio >= userData.timer3MpMin && mpRatio <= userData.timer3MpMax) {
-                    console.log("타이머-3 기능을 사용합니다.");
-                    for (let i = 0; i < userData.timer3Count; i++) {
-                        setTimeout(() => {
-                            send(userData.timer3Key);
-                        }, userData.timer3CountDelay * i * 1000);
-                    }
-                    inCool.timer3 = true;
-                    console.log(`${userData.timer3Cool}초간 타이머-3 쿨타임이 적용됩니다.`);
-                    setTimeout(() => {
-                        inCool.timer3 = false;
-                        console.log("타이머-3 쿨타임이 해제되었습니다.");
-                    }, userData.timer3Cool * 1000);
-                }
-            }
+        //PK 이미지 매칭
+        const pkResult = new cv.Mat();
+        const pkMask = new cv.Mat();
+        cv.matchTemplate(pkTarget, pkImg, pkResult, cv.TM_CCOEFF, pkMask);
+        const pkRoc = cv.minMaxLoc(pkResult, pkMask);
+        param.pkThresNow = pkRoc.maxVal;
+        if (Math.round(param.pkThresNow) >= param.pkThres) {
+            onPk = true;
+            pk.label = "전투:PK";
+        } else {
+            onPk = false;
+            pk.label = "전투:보통";
         }
+
+        //1280x720 이미지에서 물약이미지 잘라오기
+        canvas.width = param.potionCapW;
+        canvas.height = param.potionCapH;
+        ctx.drawImage(canvasFull, param.potionCap.x, param.potionCap.y, param.potionCapW, param.potionCapH, 0, 0, param.potionCapW, param.potionCapH);
+        param.potionImage.src = canvas.toDataURL();
+        const potionImg = cv.imread(canvas);
+
+        //물약 이미지 매칭
+        const potionResult = new cv.Mat();
+        const potionMask = new cv.Mat();
+        cv.matchTemplate(potionTarget, potionImg, potionResult, cv.TM_CCOEFF, potionMask);
+        const potionRoc = cv.minMaxLoc(potionResult, potionMask);
+        param.potionThresNow = potionRoc.maxVal;
+        if (Math.round(param.potionThresNow) >= param.potionThres) {
+            noPotion = true;
+            potion.label = "물약:없음";
+        } else {
+            noPotion = false;
+            potion.label = "물약:있음";
+        }
+
         hpImg.delete();
         hpImgPlanes.delete();
         hpRed.delete();
@@ -824,29 +330,327 @@
         mpHigh.delete();
         mpBlue.delete();
         mpImg.delete();
-        setTimeout(captureLoop, 200);
+        pkImg.delete();
+        pkResult.delete();
+        pkMask.delete();
+        potionImg.delete();
+        potionResult.delete();
+        potionMask.delete();
+
+        pane.refresh();
+        setTimeout(captureLoop, 500);
     }
 
-    const tabButtons = document.querySelectorAll("[role=tab]");
-    tabButtons.forEach((tabButton) => {
-        tabButton.addEventListener("click", (e) => {
-            e.preventDefault();
-            const tabContainer = e.target.parentElement.parentElement;
-            const targetId = e.target.getAttribute("aria-controls");
-            tabButtons.forEach((_tabButton) =>
-                _tabButton.setAttribute("aria-selected", false)
-            );
-            tabButton.setAttribute("aria-selected", true);
-            tabContainer
-                .querySelectorAll("[role=tabpanel]")
-                .forEach((tabPanel) => tabPanel.setAttribute("hidden", true));
-            tabContainer
-                .querySelector(`[role=tabpanel]#${targetId}`)
-                .removeAttribute("hidden");
+    const controlLoop = () => {
+        // 슬롯 제어
+        for (let i = 1; i <= 5; i++) {
+            if (param[`slot${i}Use`]) {
+                if (hpNow >= param[`slot${i}Hp`]["min"] && hpNow <= param[`slot${i}Hp`]["max"]) {
+                    if (mpNow >= param[`slot${i}Mp`]["min"] && mpNow <= param[`slot${i}Mp`]["max"]) {
+                        if (cooltime[`slot${i}`] === false) {
+                            doAction(param[`slot${i}Key`], param[`slot${i}Count`], param[`slot${i}Delay`]);
+                            cooltime[`slot${i}`] = true;
+                            if (param[`slot${i}Repeat`] === false) {
+                                param[`slot${i}Use`] = false;
+                            }
+                            setTimeout(() => {
+                                cooltime[`slot${i}`] = false;
+                            }, parseFloat(param[`slot${i}Cooltime`] * 1000));
+                            if (param[`slot${i}TeleUse`] === true && teleConnect === true) {
+                                teleSend(param[`slot${i}Label`] + "기능을 사용했습니다");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // PK 대응
+        if (param.pkUse && onPk && cooltime["pk"] === false) {
+            doAction(param.pkKey, param.pkCount, param.pkDelay);
+            cooltime["pk"] = true;
+            if (param.pkRepeat === false) {
+                param.pkUse = false;
+            }
+            setTimeout(() => {
+                cooltime["pk"] = false;
+            }, param.pkCooltime * 1000);
+            if (teleConnect) {
+                teleSendPhoto(canvasFull, "PK에 대응했습니다");
+            }
+        }
+
+        // 물약없음 대응
+        if (param.potionUse && noPotion) {
+            doAction(param.potionKey, 2, 0.2);
+            param.potionUse = false;
+            if (teleConnect) {
+                teleSendPhoto(canvasFull, "물약오링으로 귀환했습니다");
+            }
+        }
+        setTimeout(controlLoop, 100);
+    }
+
+    const doAction = (key, count=1, delay=0.2) => {
+        for (let i=0; i<count; i++) {
+            setTimeout(() => {
+                send(key);
+            }, delay * i * 1000);
+        }
+    }
+
+    const connect = async () => {
+        try {
+            const port = await navigator.serial.requestPort();
+            await port.open({ baudRate: 9600 });
+            writer = port.writable.getWriter();
+            arduinoConnect = true;
+            btnArduino.label = "연결완료";
+        } catch (err) {
+            console.error("에러: " + err);
+        }
+    }
+
+    const send = (data) => {
+        if (pythonConnect) {
+            console.log("Send: " + data);
+        } else if (arduinoConnect) {
+            console.log("Send: " + data);
+            const dataArrayBuffer = encoder.encode(data);
+            writer.write(dataArrayBuffer);
+        } else {
+            console.log("아두이노 또는 파이썬 연결이 필요합니다");
+        }
+    }
+
+    const teleGet = () => {
+        fetch(`https://api.telegram.org/bot${param.teleToken}/getUpdates`).then(res => {
+            res.json().then(data => {
+                teleId = data.result[0].message.chat.id;
+                console.log("텔레그램 연결 완료.");
+                teleSend("텔레그램 연결 완료.");
+                btnTelegram.label = "연결완료";
+                teleConnect = true;
+            }).catch(err => {
+                console.log("텔레그램에 연결에 실패했습니다.");
+                teleConnect = false;
+            });
         });
+    }
+
+    const makeFile = (canvasEle) => {
+        const blobBin = atob(canvasEle.toDataURL().split(",")[1]);
+        const array = [];
+        for (let i = 0; i < blobBin.length; i++) {
+            array.push(blobBin.charCodeAt(i));
+        }
+        const file = new Blob([new Uint8Array(array)], { type: "image/png" });
+        return file;
+    }
+
+    const teleSendPhoto = (canvasEle, caption) => {
+        const url = `https://api.telegram.org/bot${param.teleToken}/sendphoto?chat_id=${teleId}`
+        const file = makeFile(canvasEle);
+        const teleData = new FormData();
+        teleData.append("photo", file);
+        teleData.append("caption", caption);
+        fetch(url, {
+            method: "POST",
+            body: teleData
+        });
+    }
+
+    const teleSend = (msg) => {
+        const url = `https://api.telegram.org/bot${param.teleToken}/sendMessage?chat_id=${teleId}&text=${msg}`;
+        fetch(url);
+    }
+
+    const test = () => {
+        alert("입력 테스트를 시작합니다.\n확인버튼을 누른 후 게임창을 활성화 시키세요.");
+        for (i = 3; i < 7; i++) {
+            setTimeout(() => send('i'), i * 1000);
+        }
+        setTimeout(() => alert("입력 테스트가 종료되었습니다."), 7000);
+    }
+
+    const blog = () => {
+        window.open("https://blog.naver.com/i_am_chffkd/222998407636");
+    }
+
+    const pane = new Tweakpane.Pane({ title: "메뉴 열기/닫기" });
+    pane.registerPlugin(TweakpaneEssentialsPlugin);
+    pane.registerPlugin(TweakpaneImagePlugin);
+
+    const btnCapture = pane.addButton({ label: "캡처필요", title: "화면캡처" }).on("click", () => startCapture());
+    const btnArduino = pane.addButton({ label: "미연결", title: "아두이노" }).on("click", () => connect());
+    const btnTelegram = pane.addButton({ label: "미연결", title: "텔레그램" }).on("click", () => teleGet());
+    pane.addButton({ label: "" , title: "사용방법 확인" }).on("click", () => blog());
+
+    pane.addSeparator();
+    const hp = pane.addInput(param, 'hpImage', {
+        view: "input-image",
+        label: "마나:100%",
+        imageFit: 'contain',
+    });
+    const mp = pane.addInput(param, 'mpImage', {
+        view: "input-image",
+        label: "체력:100%",
+        imageFit: 'contain',
+    });
+    const pk = pane.addInput(param, 'pkImage', {
+        view: "input-image",
+        label: "전투:보통",
+        imageFit: 'contain',
+    });
+    const potion = pane.addInput(param, 'potionImage', {
+        view: "input-image",
+        label: "물약:있음",
+        imageFit: 'contain',
+    });
+
+    const useFolder = pane.addFolder({ title: "실행" });
+    useFolder.addInput(param, `slot1Use`, { label: param.slot1Label });
+    useFolder.addInput(param, `slot2Use`, { label: param.slot2Label });
+    useFolder.addInput(param, `slot3Use`, { label: param.slot3Label });
+    useFolder.addInput(param, `slot4Use`, { label: param.slot4Label });
+    useFolder.addInput(param, `slot5Use`, { label: param.slot5Label });
+    useFolder.addInput(param, `pkUse`, { label: "전투대응" });
+    useFolder.addInput(param, `potionUse`, { label: "물약귀환" });
+
+    const updateLabel = () => {
+        for (let i=0; i<=4; i++) {
+                useFolder.children[i].label = param[`slot${i+1}Label`];
+            }
+    }
+    updateLabel(useFolder);
+
+    const settingFolder = pane.addFolder({ title: "설정", expanded: false });
+    const captureFolder = settingFolder.addFolder({ title: "캡처", expanded: false });
+    captureFolder.addInput(param, "sura", { label: "수라"});
+    captureFolder.addInput(param, "hpCap", {
+        label: "HP좌표",
+        x: { min: 0, max: 1280, step: 1 },
+        y: { min: 0, max: 720, step: 1 }
+    });
+    captureFolder.addInput(param, "mpCap", {
+        label: "MP좌표",
+        x: { min: 0, max: 1280, step: 1 },
+        y: { min: 0, max: 720, step: 1 }
+    });
+
+    const teleFolder = settingFolder.addFolder({ title: "텔레그램", expanded: false });
+    teleFolder.addInput(param, "teleToken", { label: "토큰" });
+
+    // 슬롯 설정에 추가하기
+    const slot1Folder = settingFolder.addFolder({ title: param.slot1Label, expanded: false });
+    slot1Folder.addInput(param, "slot1Label", { label: "슬롯이름" }).on("change", (evt) => updateLabel());
+    slot1Folder.addInput(param, "slot1Hp", { label: "체력(%)", min: 0, max: 100, step: 1 });
+    slot1Folder.addInput(param, "slot1Mp", { label: "마나(%)", min: 0, max: 100, step: 1 });
+    slot1Folder.addInput(param, "slot1Key", { label: "입력키" });
+    slot1Folder.addInput(param, "slot1Count", { label: "입력횟수", step: 1, min: 1, max: 5 });
+    slot1Folder.addInput(param, "slot1Delay", { label: "딜레이", step: 0.1, min: 0.1, max: 1.0 });
+    slot1Folder.addInput(param, "slot1Cooltime", { label: "쿨타임", step: 0.1, min: 0.1, max: 600 });
+    slot1Folder.addInput(param, "slot1Repeat", { label: "반복실행" });
+    slot1Folder.addInput(param, "slot1TeleUse", { label: "알림" });
+
+    const slot2Folder = settingFolder.addFolder({ title: param.slot2Label, expanded: false });
+    slot2Folder.addInput(param, "slot2Label", { label: "슬롯이름" }).on("change", (evt) => updateLabel());
+    slot2Folder.addInput(param, "slot2Hp", { label: "체력(%)", min: 0, max: 100, step: 1 });
+    slot2Folder.addInput(param, "slot2Mp", { label: "마나(%)", min: 0, max: 100, step: 1 });
+    slot2Folder.addInput(param, "slot2Key", { label: "입력키" });
+    slot2Folder.addInput(param, "slot2Count", { label: "입력횟수", step: 1, min: 1, max: 5 });
+    slot2Folder.addInput(param, "slot2Delay", { label: "딜레이", step: 0.1, min: 0.1, max: 1.0 });
+    slot2Folder.addInput(param, "slot2Cooltime", { label: "쿨타임", step: 0.1, min: 0.1, max: 600 });
+    slot2Folder.addInput(param, "slot2Repeat", { label: "반복실행" });
+    slot2Folder.addInput(param, "slot2TeleUse", { label: "알림" });
+
+    
+    const slot3Folder = settingFolder.addFolder({ title: param.slot3Label, expanded: false });
+    slot3Folder.addInput(param, "slot3Label", { label: "슬롯이름" }).on("change", (evt) => updateLabel());
+    slot3Folder.addInput(param, "slot3Hp", { label: "체력(%)", min: 0, max: 100, step: 1 });
+    slot3Folder.addInput(param, "slot3Mp", { label: "마나(%)", min: 0, max: 100, step: 1 });
+    slot3Folder.addInput(param, "slot3Key", { label: "입력키" });
+    slot3Folder.addInput(param, "slot3Count", { label: "입력횟수", step: 1, min: 1, max: 5 });
+    slot3Folder.addInput(param, "slot3Delay", { label: "딜레이", step: 0.1, min: 0.1, max: 1.0 });
+    slot3Folder.addInput(param, "slot3Cooltime", { label: "쿨타임", step: 0.1, min: 0.1, max: 600 });
+    slot3Folder.addInput(param, "slot3Repeat", { label: "반복실행" });
+    slot3Folder.addInput(param, "slot3TeleUse", { label: "알림" });
+
+
+    const slot4Folder = settingFolder.addFolder({ title: param.slot4Label, expanded: false });
+    slot4Folder.addInput(param, "slot4Label", { label: "슬롯이름" }).on("change", (evt) => updateLabel());
+    slot4Folder.addInput(param, "slot4Hp", { label: "체력(%)", min: 0, max: 100, step: 1 });
+    slot4Folder.addInput(param, "slot4Mp", { label: "마나(%)", min: 0, max: 100, step: 1 });
+    slot4Folder.addInput(param, "slot4Key", { label: "입력키" });
+    slot4Folder.addInput(param, "slot4Count", { label: "입력횟수", step: 1, min: 1, max: 5 });
+    slot4Folder.addInput(param, "slot4Delay", { label: "딜레이", step: 0.1, min: 0.1, max: 1.0 });
+    slot4Folder.addInput(param, "slot4Cooltime", { label: "쿨타임", step: 0.1, min: 0.1, max: 600 });
+    slot4Folder.addInput(param, "slot4Repeat", { label: "반복실행" });
+    slot4Folder.addInput(param, "slot4TeleUse", { label: "알림" });
+
+
+    const slot5Folder = settingFolder.addFolder({ title: param.slot5Label, expanded: false });
+    slot5Folder.addInput(param, "slot5Label", { label: "슬롯이름" }).on("change", (evt) => updateLabel());
+    slot5Folder.addInput(param, "slot5Hp", { label: "체력(%)", min: 0, max: 100, step: 1 });
+    slot5Folder.addInput(param, "slot5Mp", { label: "마나(%)", min: 0, max: 100, step: 1 });
+    slot5Folder.addInput(param, "slot5Key", { label: "입력키" });
+    slot5Folder.addInput(param, "slot5Count", { label: "입력횟수", step: 1, min: 1, max: 5 });
+    slot5Folder.addInput(param, "slot5Delay", { label: "딜레이", step: 0.1, min: 0.1, max: 1.0 });
+    slot5Folder.addInput(param, "slot5Cooltime", { label: "쿨타임", step: 0.1, min: 0.1, max: 600 });
+    slot5Folder.addInput(param, "slot5Repeat", { label: "반복실행" });
+    slot5Folder.addInput(param, "slot5TeleUse", { label: "알림" });
+
+
+    const pkFolder = settingFolder.addFolder({ title: "전투대응", expanded: false });
+    pkFolder.addInput(param, "pkKey", { label: "입력키" });
+    pkFolder.addInput(param, "pkCount", { label: "입력횟수", step: 1, min: 1, max: 5 });
+    pkFolder.addInput(param, "pkDelay", { label: "딜레이", step: 0.1, min: 0.1, max: 1.0 });
+    pkFolder.addInput(param, "pkCooltime", { label: "쿨타임", step: 0.1, min: 0.1, max: 600 });
+    pkFolder.addInput(param, "pkRepeat", { label: "반복실행" });
+    pkFolder.addInput(param, "pkCap", {
+        label: "인식좌표",
+        x: { min: 0, max: 1280, step: 1 },
+        y: { min: 0, max: 720, step: 1 }
+    });
+    pkFolder.addInput(param, "pkThres", { label: "판정값", step: 1, min: 0, max: 1500000 });
+    pkFolder.addMonitor(param, "pkThresNow", { label: "인식값" });
+
+    const potionFolder = settingFolder.addFolder({ title: "물약귀환", expanded: false });
+    potionFolder.addInput(param, "potionKey", { label: "입력키" });
+    potionFolder.addInput(param, "potionCap", {
+        label: "인식좌표",
+        x: { min: 0, max: 1280, step: 1 },
+        y: { min: 0, max: 720, step: 1 }
+    });
+    potionFolder.addInput(param, "potionThres", { label: "판정값", step: 1, min: 0, max: 1500000 });
+    potionFolder.addMonitor(param, "potionThresNow", { label: "인식값" });
+
+    settingFolder.addButton({ title: "설정초기화" }).on("click", () => {
+        localStorage.removeItem("userDataV2");
+        alert("설정이 초기화 되었습니다.\n새로고침 후 적용됩니다.");
+    });
+
+
+    // 그림창 크기 수정
+    const el = document.getElementsByClassName("tp-imgv tp-imgv_area_root");
+    el[0].style.height = "20px"; // 체력
+    el[1].style.height = "20px"; // 마나
+    el[2].style.height = "25px"; // 전투
+    el[3].style.height = "20px"; // 물약
+
+    // window.open("file:///C:/Users/sein1/Desktop/linw/tweakpane_231114.html", "mywindow", "menubar=1, resizable=1, width=270, height=800")
+
+    if (localStorage.getItem("userDataV2") == null) {
+        console.log("웹스토리지에 자료가 없습니다. 현재 데이터를 저장합니다.");
+        localStorage.setItem("userDataV2", JSON.stringify(pane.exportPreset()));
+    } else {
+        console.log("웹스토리지의 데이터를 불러옵니다.");
+        pane.importPreset(JSON.parse(localStorage.getItem("userDataV2")));
+    }
+
+    pane.on('change', (ev) => {
+        localStorage.setItem("userDataV2", JSON.stringify(pane.exportPreset()));
     });
 
 </script>
-<script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
 
 </html>
