@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>LINEAGE W - 2023.01.29</title>
+    <title>LINEAGE W - 2023.03.29</title>
 </head>
 
 <body>
@@ -17,6 +17,7 @@
     src="https://cdn.jsdelivr.net/npm/@tweakpane/plugin-essentials@0.1.5/dist/tweakpane-plugin-essentials.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tweakpane-image-plugin@1.1.3/dist/tweakpane-image-plugin.min.js"></script>
 <script>
+    window.onload = () => window.resizeTo(290, 530);
     let cvLoad = false;
     let onPk = false;
     let arduinoConnect = false;
@@ -164,11 +165,13 @@
             alert("Opencv.js not loaded.");
             return;
         } else {
+            window.resizeTo(800, 600);
             video.srcObject = await navigator.mediaDevices.getDisplayMedia({
                 video: { cursor: "always", frameRate: { ideal: 10, max: 10 } },
                 audio: false,
             });
             btnCapture.label = "캡처완료";
+            window.onload = () => window.resizeTo(290, 530);
             setTimeout(captureLoop, 2000);
             setTimeout(controlLoop, 3000);
         }
