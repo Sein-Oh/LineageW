@@ -1,0 +1,84 @@
+{
+    "PLAYER-1" : {
+        "CAPTURE" : {
+            "HP" : {
+                "X" : 90,
+                "Y" : 32,
+                "W" : 190,
+                "H" : 6
+            },
+            "MP" : {
+                "X" : 90,
+                "Y" : 45,
+                "W" : 190,
+                "H" : 6
+            },
+            "PK" : {
+                "X" : 1057,
+                "Y" : 25,
+                "W" : 533,
+                "H" : 25
+            }
+        },
+        "SLOT-1" : {
+            "LABEL" : "귀환",
+            "HP_MIN": 0,
+            "HP_MAX": 30,
+            "MP_MIN": 0,
+            "MP_MAX": 100,
+            "KEY": "8",
+            "COUNT": 2,
+            "DELAY": 0.5,
+            "COOLTIME": 10,
+            "REPEAT": false
+        },
+        "SLOT-2" : {
+            "LABEL" : "맑은물약",
+            "HP_MIN": 31,
+            "HP_MAX": 60,
+            "MP_MIN": 0,
+            "MP_MAX": 100,
+            "KEY": "1",
+            "COUNT": 1,
+            "DELAY": 0.2,
+            "COOLTIME": 1,
+            "REPEAT": false
+        },
+        "SLOT-3" : {
+            "LABEL" : "미설정",
+            "HP_MIN": 0,
+            "HP_MAX": 100,
+            "MP_MIN": 0,
+            "MP_MAX": 100,
+            "KEY": "1",
+            "COUNT": 1,
+            "DELAY": 0.2,
+            "COOLTIME": 1,
+            "REPEAT": false
+        },
+        "SLOT-4" : {
+            "LABEL" : "미설정",
+            "HP_MIN": 0,
+            "HP_MAX": 100,
+            "MP_MIN": 0,
+            "MP_MAX": 100,
+            "KEY": "1",
+            "COUNT": 1,
+            "DELAY": 0.2,
+            "COOLTIME": 1,
+            "REPEAT": false
+        },
+        "SLOT-5" : {
+            "LABEL" : "미설정",
+            "HP_MIN": 0,
+            "HP_MAX": 100,
+            "MP_MIN": 0,
+            "MP_MAX": 100,
+            "KEY": "1",
+            "COUNT": 1,
+            "DELAY": 0.2,
+            "COOLTIME": 1,
+            "REPEAT": false
+        }
+    }
+}
