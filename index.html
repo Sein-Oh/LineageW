@@ -1,1 +1,447 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+	<title>Mandloh</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="https://unpkg.com/7.css">
+	<style>
+		.image-container1 {
+			margin-top: 10px;
+			width: 345px;
+			height: 195px;
+			overflow: auto;
+			border: 1px solid;
+		}
+		img {
+			width: 100%;
+			height: auto;
+			display: block;
+		}
+		fieldset {
+			overflow: hidden;
+			border-radius: 8px;
+		}
+	</style>
+</head>
+
+<body>
+	<fieldset style="width:350px; height:auto; overflow:auto; display:inline-block;">
+		<legend>캡처화면</legend>
+		<button id="btn_start" disabled="true" onclick="load_json_file()">시작</button>
+		<button onclick="download_img()">캡처저장</button>
+		<button onclick="popup()">새로열기</button>
+		<input id="input-test" type="text" style="width:110px" value="입력확인">
+		<br>
+		<div class="image-container1">
+			<img id="img" crossorigin="anonymous">
+		</div>
+	</fieldset>
+	<br>
+	<fieldset id="run_field" style="width:60px; height:auto; overflow:auto; display:inline-block;">
+		<legend>실행제어</legend>
+	</fieldset>
+	<fieldset id="value_field" style="width:90px; height:auto; overflow:auto; display:inline-block;">
+		<legend>결과값</legend>
+	</fieldset>
+	<fieldset id="log_field" style="width:150px; height:auto; overflow:auto; display:inline-block;">
+		<legend>설정값</legend>
+	</fieldset>
+</body>
+<script>
+	// document scale up
+	// document.body.style.zoom = "120%"
+
+	let userdata;
+
+	const img = document.querySelector("img")
+	const canvas = document.createElement("canvas")
+	const canvasFull = document.createElement("canvas")
+	const ctx = canvas.getContext("2d", { willReadFrequently: true })
+	const ctxFull = canvasFull.getContext("2d", { willReadFrequently: true })
+	const targetImg = {}
+	const values = {}
+
+	const cv_ready = () => {
+		console.log("opencv.js is ready.")
+		document.getElementById("btn_start").disabled = false
+	}
+
+	const load_json_file = () => {
+		const input = document.createElement("input")
+		input.type = "file"
+		input.accept = ".json"
+		input.onchange = evt => {
+			const selectedFile = evt.target.files[0]
+			const reader = new FileReader()
+			reader.onload = () => {
+				const data = JSON.parse(reader.result)
+				userdata = data
+				if (userdata.hasOwnProperty("timer")) {
+					Object.keys(userdata.timer).forEach(key => {
+						setup_checkbox(key)
+						setup_log(key)
+						setup_value(key)
+					})
+				}
+
+				if (userdata.hasOwnProperty("hpslot")) {
+					Object.keys(userdata.hpslot).forEach(key => {
+						setup_checkbox(key)
+						setup_log(key)
+						setup_value(key)
+					})
+				}
+
+				if (userdata.hasOwnProperty("imgslot")) {
+					Object.keys(userdata.imgslot).forEach(key => {
+						setup_checkbox(key)
+						setup_log(key)
+						setup_value(key)
+						const im = document.createElement("img")
+						im.onload = () => {
+							targetImg[key] = cv.imread(im)
+						}
+						im.src = userdata.imgslot[key].src
+					})
+				}
+				apply_log()
+				apply_value()
+				img.src = userdata.app.stream_url
+				img.onload = () => {
+					capture_loop()
+					control_loop()
+					console.log("Capture start.")
+				}
+			}
+			reader.readAsText(selectedFile)
+		};
+		input.click();
+	}
+
+	const setup_checkbox = (title) => {
+		const div = document.createElement("div")
+		div.classList.add("field-row")
+		const input = document.createElement("input")
+		input.type = "checkbox"
+		input.id = title
+		const label = document.createElement("label")
+		label.htmlFor = title
+		label.innerHTML = title
+		div.appendChild(input)
+		div.appendChild(label)
+		document.querySelector("#run_field").appendChild(div)
+	}
+
+	const setup_log = (title) => {
+		const div = document.createElement("div")
+		div.classList.add("field-row")
+		const inp = document.createElement("input")
+		inp.type = "text"
+		inp.disabled = true
+		inp.style.border = "none"
+		inp.style.height = "16px"
+		inp.style.width = "145px"
+		inp.value = "📢"
+		inp.id = `${title}-log`
+		div.appendChild(inp)
+		document.querySelector("#log_field").appendChild(div)
+	}
+
+	const apply_log = () => {
+		if (userdata.hasOwnProperty("timer")) {
+			Object.keys(userdata.timer).forEach(key => {
+				const log = document.getElementById(`${key}-log`)
+				const input_key = userdata.timer[key].key
+				const cooltime = userdata.timer[key].cooltime
+				log.value = `⌨ ${input_key}  ⏱${cooltime}`
+			})
+		}
+
+		if (userdata.hasOwnProperty("hpslot")) {
+			Object.keys(userdata.hpslot).forEach(key => {
+				const log = document.getElementById(`${key}-log`)
+				const input_key = userdata.hpslot[key].key
+				const cooltime = userdata.hpslot[key].cooltime
+				const [hp_min, hp_max] = userdata.hpslot[key].hp_range
+				log.value = `⌨ ${input_key}  🩸${hp_min}~${hp_max}  ⏱${cooltime}`
+			})
+		}
+
+		if (userdata.hasOwnProperty("imgslot")) {
+			Object.keys(userdata.imgslot).forEach(key => {
+				const log = document.getElementById(`${key}-log`)
+				const input_key = userdata.imgslot[key].key
+				const thres = userdata.imgslot[key].thres
+				log.value = `⌨ ${input_key}  ✂ ${parseInt(thres).toLocaleString()}`
+			})
+		}
+	}
+
+	const setup_value = (title) => {
+		const div = document.createElement("div")
+		div.classList.add("field-row")
+		const inp = document.createElement("input")
+		inp.type = "text"
+		inp.disabled = true
+		inp.style.border = "none"
+		inp.style.height = "16px"
+		inp.style.width = "90px"
+		inp.style.textAlign = "center"
+		inp.id = `${title}-value`
+		div.appendChild(inp)
+		document.querySelector("#value_field").appendChild(div)
+	}
+
+	const apply_value = () => {
+		if (userdata.hasOwnProperty("timer")) {
+			Object.keys(userdata.timer).forEach(key => {
+				const log = document.getElementById(`${key}-value`)
+				log.value = "🚫"
+			})
+		}
+	}
+
+	const send_keys = async (keys) => {
+		for (key of keys.split(",")) {
+			if (key.indexOf("-") >= 0) {
+				await delay(parseFloat(key.substr(1, key.length)) * 1000)
+			} else if (key == "capture") {
+				const timestamp = new Date().getTime()
+				const date = new Date(timestamp)
+				const month = ("0" + (date.getMonth() + 1)).slice(-2)
+				const day = ("0" + date.getDate()).slice(-2)
+				const hour = ("0" + date.getHours()).slice(-2)
+				const minute = ("0" + date.getMinutes()).slice(-2)
+				const second = ("0" + date.getSeconds()).slice(-2)
+				download_img()
+			}
+
+			else {
+				console.log(key)
+				fetch(`${userdata.app.input_url}/${key}`)
+			}
+		}
+	}
+
+	const control_loop = () => {
+		if (userdata.hasOwnProperty("timer")) {
+			Object.keys(userdata.timer).forEach(key => {
+				if (document.getElementById(key).checked == true) {
+					// Cooltime control
+					if (userdata.timer[key].cooling === false) {
+						userdata.timer[key].cooling = true
+						setTimeout(() => {
+							userdata.timer[key].cooling = false
+						}, userdata.timer[key].cooltime * 1000)
+						const input_key = userdata.timer[key].key
+						send_keys(input_key)
+					}
+				}
+			})
+		}
+
+		if (userdata.hasOwnProperty("hpslot")) {
+			Object.keys(userdata.hpslot).forEach(key => {
+				if (document.getElementById(key).checked == true) {
+					const [hp_min, hp_max] = userdata.hpslot[key].hp_range
+					const hp = values[key]
+					if (hp >= hp_min && hp <= hp_max) {
+						// Cooltime control
+						if (userdata.hpslot[key].cooling === false) {
+							userdata.hpslot[key].cooling = true
+							setTimeout(() => {
+								userdata.hpslot[key].cooling = false
+							}, userdata.hpslot[key].cooltime * 1000)
+							const input_key = userdata.hpslot[key].key
+							send_keys(input_key)
+						}
+					}
+				}
+			})
+		}
+
+		if (userdata.hasOwnProperty("imgslot")) {
+			Object.keys(userdata.imgslot).forEach(key => {
+				if (document.getElementById(key).checked == true) {
+					const thres = userdata.imgslot[key].thres
+					if (values[key] >= thres) {
+						// Cooltime control
+						if (userdata.imgslot[key].cooling === false) {
+							userdata.imgslot[key].cooling = true
+							setTimeout(() => {
+								userdata.imgslot[key].cooling = false
+							}, userdata.imgslot[key].cooltime * 1000)
+							const input_key = userdata.imgslot[key].key
+							send_keys(input_key)
+						}
+					}
+				}
+			})
+		}
+		setTimeout(control_loop, 100)
+	}
+	const capture_loop = () => {
+		canvasFull.width = img.naturalWidth
+		canvasFull.height = img.naturalHeight
+		if (userdata.app.resize == false) {
+			ctxFull.drawImage(img, 0, 0)
+		} else {
+			canvasFull.width = userdata.app.resize[0]
+			canvasFull.height = userdata.app.resize[1]
+			ctxFull.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, userdata.app.resize[0], userdata.app.resize[1])
+		}
+
+		if (userdata.hasOwnProperty("hpslot")) {
+			Object.keys(userdata.hpslot).forEach(key => {
+				if (document.getElementById(key).checked == true) {
+					const [x1, y1, x2, y2] = userdata.hpslot[key].roi
+					canvas.width = x2 - x1
+					canvas.height = y2 - y1
+					ctx.drawImage(canvasFull, x1, y1, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height)
+
+					const hpImg = cv.imread(canvas)
+
+					//HP Red 값만 추출하기
+					const hpImgPlanes = new cv.MatVector()
+					cv.split(hpImg, hpImgPlanes);
+					const hpRed = hpImgPlanes.get(0)
+
+
+					//HP 블러 처리하기
+					const hpBlur = new cv.Mat()
+					const ksize = new cv.Size(5, 5)
+					const anchor = new cv.Point(-1, -1)
+					cv.blur(hpRed, hpBlur, ksize, anchor, cv.BORDER_DEFAULT)
+
+					//HP 임계 처리하기
+					const thres = userdata.hpslot[key].thres
+					const hpThres = new cv.Mat()
+					cv.threshold(hpBlur, hpThres, thres, 255, cv.THRESH_BINARY)
+
+					//HP 계산하기
+					const hpData1D = []
+					const hpData2D = []
+					const hpMaxAry = []
+
+					//HP cv.Mat 데이터를 JS array로 가져오기
+					hpThres.data.forEach(value => hpData1D.push(value))
+
+					//HP 1차원 데이터를 2차원(x, y)으로 분리하기
+					while (hpData1D.length) hpData2D.push(hpData1D.splice(0, hpThres.size().width))
+
+					//배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)
+					for (i = 0; i < hpData2D.length; i++) {
+						// 수정. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
+						const idx = hpData2D[i].reverse().indexOf(255)
+						const value = idx < 0 ? hpImg.size().width : idx
+						hpMaxAry.push(value)
+					}
+
+					//hpMaxAry의 가장 작은값 찾아 HP비율로 계산
+					const hpMinIdx = Math.min.apply(null, hpMaxAry) < 0 ? 0 : Math.min.apply(null, hpMaxAry)
+					const hpRatio_ = Math.round((hpThres.size().width - hpMinIdx) / hpThres.size().width * 100)
+					//22.08.22 추가 - HP가 0인 경우 대부분 오류이므로 100%로 인식하도록 조치.
+					const hpRatio = hpRatio_ == 0 ? 100 : hpRatio_
+					document.getElementById(`${key}-value`).value = `🩸${hpRatio}%`
+					values[key] = hpRatio
+
+					hpImg.delete()
+					hpImgPlanes.delete()
+					hpRed.delete()
+					hpBlur.delete()
+					hpThres.delete()
+				}
+			})
+		}
+
+		if (userdata.hasOwnProperty("imgslot")) {
+			Object.keys(userdata.imgslot).forEach(key => {
+				if (document.getElementById(key).checked == true) {
+					// Crop image
+					const [x1, y1, x2, y2] = userdata.imgslot[key].roi
+					canvas.width = x2 - x1
+					canvas.height = y2 - y1
+					ctx.drawImage(canvasFull, x1, y1, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height)
+					const croppedImg = cv.imread(canvas)
+
+					const result = new cv.Mat()
+					const mask = new cv.Mat()
+					cv.matchTemplate(targetImg[key], croppedImg, result, cv.TM_CCOEFF, mask);
+					const roc = cv.minMaxLoc(result, mask)
+					document.getElementById(`${key}-value`).value = `✂ ${parseInt(roc.maxVal).toLocaleString()}`
+					values[key] = roc.maxVal
+
+					croppedImg.delete()
+					result.delete()
+					mask.delete()
+				}
+			})
+		}
+		setTimeout(capture_loop, 200)
+	}
+
+	const delay = msec => {
+		return new Promise(resolve => {
+			setTimeout(resolve, msec)
+		})
+	}
+
+	const telegram_message = (msg) => {
+		const url = `https://api.telegram.org/bot${userdata.app.telegram_token}/sendMessage?chat_id=${userdata.app.telegram_chat_id}&text=${msg}`
+		fetch(url)
+	}
+
+	const make_blob = (canvasEle) => {
+		const blobBin = atob(canvasEle.toDataURL().split(",")[1])
+		const array = []
+		for (let i = 0; i < blobBin.length; i++) {
+			array.push(blobBin.charCodeAt(i))
+		}
+		const file = new Blob([new Uint8Array(array)], { type: "image/png" })
+		return file
+	}
+
+	const telegram_photo = (canvasEle, caption) => {
+		const url = `https://api.telegram.org/bot${userdata.app.telegram_token}/sendphoto?chat_id=${userdata.app.telegram_chat_id}`
+		const file = make_blob(canvasEle);
+		const teleData = new FormData()
+		teleData.append("photo", file)
+		teleData.append("caption", caption)
+		fetch(url, {
+			method: "POST",
+			body: teleData
+		})
+	}
+
+	const download_img = () => {
+		const timestamp = new Date().getTime()
+		const date = new Date(timestamp)
+		const month = ("0" + (date.getMonth() + 1)).slice(-2)
+		const day = ("0" + date.getDate()).slice(-2)
+		const hour = ("0" + date.getHours()).slice(-2)
+		const minute = ("0" + date.getMinutes()).slice(-2)
+		const second = ("0" + date.getSeconds()).slice(-2)
+		const data = canvasFull.toDataURL("image/png")
+		const link = document.createElement("a")
+		link.download = `${month}${day}${hour}${minute}${second} capture.png`
+		link.href = data
+		link.click()
+	}
+
+	const input_test = document.querySelector("#input-test")
+	input_test.onclick = () => {
+		input_test.value = ""
+		send_keys("OK")
+	}
+	input_test.onmouseout = () => {
+		input_test.value = "입력확인"
+	}
+
+	const popup = () => {
+		window.open(window.location.href, "_blank", "width=410; height=400;location=no; menubar=no; status=no; toolbar=no")
+	}
+</script>
+<script async src="https://docs.opencv.org/4.7.0/opencv.js" onload="cv_ready()" type="text/javascript"></script>
+
+</html>
