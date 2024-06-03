@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<title>Mandloh</title>
+	<title>Mandloh (2406031915)</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="https://unpkg.com/7.css">
 	<style>
@@ -13,11 +13,13 @@
 			overflow: auto;
 			border: 1px solid;
 		}
+
 		img {
 			width: 100%;
 			height: auto;
 			display: block;
 		}
+
 		fieldset {
 			overflow: hidden;
 			border-radius: 8px;
@@ -202,26 +204,27 @@
 		}
 	}
 
-	const send_keys = async (keys) => {
-		for (key of keys.split(",")) {
-			if (key.indexOf("-") >= 0) {
-				await delay(parseFloat(key.substr(1, key.length)) * 1000)
-			} else if (key == "capture") {
-				const timestamp = new Date().getTime()
-				const date = new Date(timestamp)
-				const month = ("0" + (date.getMonth() + 1)).slice(-2)
-				const day = ("0" + date.getDate()).slice(-2)
-				const hour = ("0" + date.getHours()).slice(-2)
-				const minute = ("0" + date.getMinutes()).slice(-2)
-				const second = ("0" + date.getSeconds()).slice(-2)
+	const send_keys = (keys) => {
+		let keys_str = keys
+		const keys_ary = keys.split(" ")
+		keys_ary.forEach(key => {
+			if (key.indexOf("cap") >= 0) {
+				keys_str = keys_str.replace(key, "")
 				download_img()
 			}
-
-			else {
-				console.log(key)
-				fetch(`${userdata.app.input_url}/${key}`)
+			else if (key.indexOf("noti") >= 0) {
+				keys_str = keys_str.replace(key, "")
+				const msg = key.slice(key.indexOf("(")+1, key.indexOf(")"))
+				telegram_message(msg)
 			}
-		}
+			else if (key.indexOf("photo") >= 0) {
+				keys_str = keys_str.replace(key, "")
+				const msg = key.slice(key.indexOf("(")+1, key.indexOf(")"))
+				telegram_photo(canvasFull, msg)
+			}
+		})
+		console.log(keys_str)
+		fetch(`${userdata.app.input_url}/${keys_str}`)
 	}
 
 	const control_loop = () => {
