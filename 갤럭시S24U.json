@@ -1,0 +1,40 @@
+{
+	"app": {
+		"stream_url": "http://127.0.0.1:8080/stream.mjpeg?clientId=r2r20PbeWKZpmCWJ",
+		"input_url": "http://localhost:8000",
+		"resize": false,
+		"telegram_token": "",
+		"telegram_chat_id": ""
+	}, "timer": {
+		"4번5초": {
+			"key": "4",
+			"cooltime": 5.0
+		}
+	},
+	"hpslot": {
+		"귀환": {
+			"key": "8 -0.5 8 -0.5 8",
+			"cooltime": 30.0,
+			"roi": [448,21,576,25],
+			"thres": 210,
+			"hp_range": [5,40],
+			"cooling": false
+		},
+		"텔": {
+			"key": "7",
+			"cooltime": 5.0,
+			"roi": [448,21,576,25],
+			"thres": 210,
+			"hp_range": [41,60],
+			"cooling": false
+		},
+		"힐": {
+			"key": "4",
+			"cooltime": 3.0,
+			"roi": [448,21,576,25],
+			"thres": 210,
+			"hp_range": [61,85],
+			"cooling": false
+		}
+	}
+}
